@@ -1,6 +1,6 @@
 /**
- * TODO: description
- */
+* TODO: description
+*/
 
 public class RideData {    
     FileIO file;
@@ -8,10 +8,9 @@ public class RideData {
     // Get total number of samples and initialize array
     file.open("textfiles/numberOfSamples.txt", FileIO.READ);
     
-    file => static int numberOfSamples;
-    static Sample samples[numberOfSamples];
+    file => int numberOfSamples;
+    Sample samples[numberOfSamples];
     file.close();
-    
     
     // Read power data into array
     file.open("textfiles/power.txt", FileIO.READ);
@@ -48,14 +47,12 @@ public class RideData {
     }
     file.close();
     
-    
-    fun static SampleGrains getGrains(int grainSize, int numberOfSamples) {
         
+    fun SampleGrains getGrains(int grainSize) {
         // Round down to nearest grain
-        numberOfSamples % grainSize -=> int numberOfSamples2;
-        
-        numberOfSamples2 / grainSize => int arraySize;
-        
+        numberOfSamples - (numberOfSamples % grainSize) => int roundedSamples;
+        roundedSamples / grainSize => int arraySize;
+
         float powerAverages[arraySize];
         0.0 => float power;
         
@@ -72,7 +69,7 @@ public class RideData {
         0 => int index;
         0 => int count;
         
-        for (0 => int i; i < numberOfSamples2; i++) {
+        for (0 => int i; i < roundedSamples; i++) {
             count++; 
             
             samples[i].power.current +=> power;
@@ -96,8 +93,7 @@ public class RideData {
                 index++;
                 0 => count;
             }
-        } 
-        
+        }
         
         SampleGrains grains;
         
@@ -106,7 +102,7 @@ public class RideData {
         cadenceAverages @=> grains.cadence;
         heartRateAverages @=> grains.heartRate;
         
-        // Find minimums and maximums 
+        //Find minimums and maximums 
         getMin(powerAverages) => grains.minPower;
         getMax(powerAverages) => grains.maxPower;
         

@@ -1,49 +1,3 @@
-//---------- File I/O ----------//
-
-FileIO file;
-
-// Get total number of samples and initialize array
-file.open("textfiles/numberOfSamples.txt", FileIO.READ);
-
-file => int numberOfSamples;
-Sample samples[numberOfSamples];
-file.close();
-
-
-// Read power data into array
-file.open("textfiles/power.txt", FileIO.READ);
-
-for (0 => int i; i < numberOfSamples; i++) {
-    file => samples[i].power.current;
-}
-file.close();
-
-
-// Read speed data into array
-file.open("textfiles/speed.txt", FileIO.READ);
-
-for (0 => int i; i < numberOfSamples; i++) {
-    file => samples[i].speed.current;
-}
-file.close();
-
-
-// Read heart rate data into array
-file.open("textfiles/heartRate.txt", FileIO.READ);
-
-for (0 => int i; i < numberOfSamples; i++) {
-    file => samples[i].heartRate.current;
-}
-file.close();
-
-
-// Read cadence data into array
-file.open("textfiles/cadence.txt", FileIO.READ);
-
-for (0 => int i; i < numberOfSamples; i++) {
-    file => samples[i].cadence.current;
-}
-file.close();
 
 
 //---------- Calculate minimums, maximums, and averages ----------//
@@ -117,15 +71,13 @@ for (1 => int i; i < numberOfSamples; i++) {
 <<< "Done" >>>;
 
 
-
-///////////////////////////////////////////////////
-
+//----------Calculate sample grains-----------//
 
 
-// Round down to nearest 1000
-numberOfSamples % 1000 -=> numberOfSamples;
+25 => int averageGrain;
 
-10 => int averageGrain;
+// Round down to nearest grain
+numberOfSamples % averageGrain -=> numberOfSamples;
 
 numberOfSamples / averageGrain => int arraySize;
 
@@ -185,133 +137,12 @@ getMax(cadenceAverages) => float maxAverageCadence;
 getMin(heartRateAverages) => float minAverageHeartRate;
 getMax(heartRateAverages) => float maxAverageHeartRate;
 
+
 <<< minAveragePower, maxAveragePower, minAverageSpeed, maxAverageSpeed >>>;
 <<< minAverageCadence, maxAverageCadence, minAverageHeartRate, maxAverageHeartRate >>>;
 
 
-//---------- PATCH ----------//
-
-// create patch, keep quiet until OSC message is receved
-SinOsc modulator => TriOsc carrier => Chorus c => NRev rev => Pan2 pan => dac;
-// Envelope env =>
-
-0 => c.mix;
-0.0 => pan.pan;
-
-0.0 => rev.mix;
-0.3 => carrier.gain;
-0 => modulator.freq;
-0 => modulator.gain;
-
-// Tell the oscillator to interpret input as frequency modulation
-2 => carrier.sync;
-
-// 461.54 == 10 min
-461.54 => float shiftDur;
-
-// Play sound based on average power over each 100 samples
-for (0 => int i; i < powerAverages.size() - 1; i++) {
-    
-    Std.mtof(getTransformation(minAveragePower, maxAveragePower, 36, 96, powerAverages[i])) => 
-    float startCarFreq;
-    
-    Std.mtof(getTransformation(minAveragePower, maxAveragePower, 36, 96, powerAverages[i + 1])) => 
-    float endCarFreq;
-    
-    
-    getTransformation(minAverageSpeed, maxAverageSpeed, 0, 500, speedAverages[i]) => 
-    float startModFreq;
-    
-    getTransformation(minAverageSpeed, maxAverageSpeed, 0, 500, speedAverages[i + 1]) => 
-    float endModFreq;
-    
-    
-    getTransformation(minAverageCadence, maxAverageCadence, 0.05, 0.6, cadenceAverages[i]) => 
-    float startCarGain;
-    
-    getTransformation(minAverageCadence, maxAverageCadence, 0.05, 0.6, cadenceAverages[i + 1]) => 
-    float endCarGain;
-    
-    
-    getTransformation(minAverageHeartRate, maxAverageHeartRate, 0, 10000, heartRateAverages[i]) => 
-    float startModGain;
-    
-    getTransformation(minAverageHeartRate, maxAverageHeartRate, 0, 10000, heartRateAverages[i + 1]) => 
-    float endModGain;
-    
-    spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);
-    spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
-    spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
-    shiftModGain(startModGain, endModGain, shiftDur);
-}
-
-<<< "Done" >>>;
-
-/** 
- * Linear transformation:
- * For a given value between [a, b], return corresponding value between [c, d]
- * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
- */
-fun float getTransformation(float a, float b, float c, float d, float x) {
-    return (x - a) / (b - a) * (d - c) + c;
-}
-
-fun void shiftCarPitch(float start, float finish, float duration) {
-    finish - start => float diff;
-    diff / duration => float grain;
-    start => float current => carrier.freq;
-    
-    for (0 => int i; i < duration; i++) {
-        //<<< s.freq() >>>;
-        grain +=> current;
-        current => carrier.freq;
-        1::ms => now;
-    }
-    finish => carrier.freq;
-}
-
-fun void shiftCarGain(float start, float finish, float duration) {
-    finish - start => float diff;
-    diff / duration => float grain;
-    start => float current => carrier.gain;
-    
-    for (0 => int i; i < duration; i++) {
-        //<<< s.freq() >>>;
-        grain +=> current;
-        current => carrier.gain;
-        1::ms => now;
-    }
-    finish => carrier.gain;
-}
-
-fun void shiftModPitch(float start, float finish, float duration) {
-    finish - start => float diff;
-    diff / duration => float grain;
-    start => float current => modulator.freq;
-    
-    for (0 => int i; i < duration; i++) {
-        //<<< s.freq() >>>;
-        grain +=> current;
-        current => modulator.freq;
-        1::ms => now;
-    }
-    finish => modulator.freq;
-}
-
-fun void shiftModGain(float start, float finish, float duration) {
-    finish - start => float diff;
-    diff / duration => float grain;
-    start => float current => modulator.gain;
-    
-    for (0 => int i; i < duration; i++) {
-        //<<< s.freq() >>>;
-        grain +=> current;
-        current => modulator.gain;
-        1::ms => now;
-    }
-    finish => modulator.gain;
-}
-
+//--------Functions--------//
 
 
 fun float getAverage(float sum, int numItems) {

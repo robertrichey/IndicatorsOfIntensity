@@ -13,6 +13,9 @@ class Y {
 
 X x;
 
-x.getY(5) @=> Y y;
+x.getY(1) @=> Y a;
+x.getY(2) @=> Y b;
 
-<<< y.value >>>;
+<<< a.value, b.value >>>;
+
+RideData.getGrains(25) @=> SampleGrains s;

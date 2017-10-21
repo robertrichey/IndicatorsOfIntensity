@@ -69,8 +69,7 @@ samples[0].cadence.current => int maxCadence;
 
 
 // TODO unnecessary assignments with min function?
-for (1 => int i; i < numberOfSamples; i++) {    
-    sampleCount++;
+for (1 => int i; i < numberOfSamples; i++) {
     
     // Power
     Std.ftoi(Math.min(minPower, samples[i].power.current)) => minPower;
@@ -211,6 +210,7 @@ SinOsc modulator => TriOsc carrier => Chorus c => NRev rev => Pan2 pan => dac;
 
 // Play sound based on average power over each 100 samples
 for (0 => int i; i < powerAverages.size() - 1; i++) {
+    <<< powerAverages[i] >>>;
     
     Std.mtof(getTransformation(minAveragePower, maxAveragePower, 36, 96, powerAverages[i])) => 
     float startCarFreq;
