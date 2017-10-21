@@ -1,17 +1,19 @@
 public class SampleGrains {
+    int numberOfGrains;
+    
     float minPower;
     float maxPower;
-    float power[];
+    float power[numberOfGrains];
     
     float minSpeed;
     float maxSpeed;
-    float speed[];
+    float speed[numberOfGrains];
     
     float minCadence;
     float maxCadence;
-    float cadence[];
+    float cadence[numberOfGrains];
     
     float minHeartRate;
     float maxHeartRate;
-    float heartRate[];
+    float heartRate[numberOfGrains];
 }

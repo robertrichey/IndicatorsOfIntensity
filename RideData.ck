@@ -97,6 +97,8 @@ public class RideData {
         
         SampleGrains grains;
         
+        arraySize => grains.numberOfGrains;
+        
         powerAverages @=> grains.power;
         speedAverages @=> grains.speed;
         cadenceAverages @=> grains.cadence;

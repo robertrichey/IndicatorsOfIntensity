@@ -122,7 +122,7 @@ for (1 => int i; i < numberOfSamples; i++) {
 
 
 // Round down to nearest 1000
-numberOfSamples % 1000 -=> numberOfSamples;
+numberOfSamples % 10 -=> numberOfSamples;
 
 10 => int averageGrain;
 
@@ -197,7 +197,7 @@ SinOsc modulator => TriOsc carrier => Chorus c => NRev rev => Pan2 pan => dac;
 0 => c.mix;
 0.0 => pan.pan;
 
-0.6 => rev.mix;
+0. => rev.mix;
 0.3 => carrier.gain;
 0 => modulator.freq;
 0 => modulator.gain;
@@ -210,7 +210,6 @@ SinOsc modulator => TriOsc carrier => Chorus c => NRev rev => Pan2 pan => dac;
 
 // Play sound based on average power over each 100 samples
 for (0 => int i; i < powerAverages.size() - 1; i++) {
-    <<< powerAverages[i] >>>;
     
     Std.mtof(getTransformation(minAveragePower, maxAveragePower, 36, 96, powerAverages[i])) => 
     float startCarFreq;
