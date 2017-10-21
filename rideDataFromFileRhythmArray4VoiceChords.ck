@@ -207,7 +207,7 @@ HevyMetl instrument4 => Pan2 pan4 => dac;
 -0.65 => pan3.pan;
 -0.95 => pan4.pan;
 
-500::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
+400::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
 q * 2 => dur h;
 q * 4 => dur w;
 q / 2 => dur e;
@@ -241,7 +241,7 @@ q / 4 => dur s;
 // [36, 40, 43] @=> int maj[];
 
 
-// rite - use octaves 2,0,2,0
+// use octaves 2,0,2,0
 [51, 54, 57, 60] @=> int rite1[];
 [36, 40, 43, 48] @=> int rite2[];
 
@@ -249,22 +249,59 @@ q / 4 => dur s;
  42, 43, 44, 45, 46, 47] @=> int chrom[];
 
 
-spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, oct, 3); // 3
-spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, maj, 0); // 0
-spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, rite2, 2); // 2
-spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, rite1, 0); // 1
+[
+[36, 38, 43, 45],
+[36, 38, 40, 42, 44, 46],
+[36, 38, 39, 41, 42, 44, 45, 47],
+[36, 38, 40, 41, 43, 45, 47],
+[36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47] 
+] @=> int chords[][];
+
+[
+[36],
+[36, 43],
+[36, 38, 43],
+[36, 38, 43, 45],
+[36, 38, 40, 43, 45],
+[36, 38, 40, 43, 45, 47],
+[36, 38, 40, 42, 43, 45, 47],
+[36, 37, 38, 40, 42, 43, 45, 47],
+[36, 37, 38, 40, 42, 43, 44, 45, 47],
+[36, 37, 38, 39, 40, 42, 43, 44, 45, 47],
+[36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47],
+[36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
+[36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47],
+[36, 37, 38, 39, 40, 42, 43, 44, 45, 47],
+[36, 37, 38, 40, 42, 43, 45, 47],
+[36, 38, 40, 42, 43, 45, 47],
+[36, 38, 40, 43, 45, 47],
+[36, 38, 40, 43, 45],
+[36, 38, 43, 45],
+[36, 38, 43],
+[36, 43],
+[36]
+] @=> int chords2[][];
+
+ 
+
+spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, chords2, 3); // 3
+spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, chords2, 0); // 0
+spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, chords2, 2); // 2
+spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, chords2, 1); // 1
 8.75::minute => now;
 
-fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chord[], int octave) {
+fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chords[][], int octave) {
     0.9 => float threshold;
    
     for (0 => int i; i < values.size(); i++) {
         Std.ftoi(getTransformation(
-        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
-
+        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;
+        
+        getChord(i, values, chords) => int which;
+        <<< "i =", i, " chord =", which, "" >>>;
+                        
         for (0 => int j; j < rhythms[row].size(); j++) { 
-            Std.mtof(chord[Math.random2(0, chord.size()-1)] + 12 * octave) => instrument.freq;
-            // Math.random2f(0.1, 0.5) => instrument.gain;
+            Std.mtof(chords[which][Math.random2(0, chords[which].size()-1)] + 12 * octave) => instrument.freq;
             
             Math.random2f(0, 1) => float chance;
 
@@ -288,6 +325,11 @@ fun void play(StkInstrument instrument, float oldBottom, float oldTop, float val
 }
 
 
+fun int getChord(int i, float values[], int chords[][]) {
+    values.size() => float numValues;
+    numValues / chords.size() => float grain;
+    return i / Std.ftoi(Math.ceil(grain));
+}
 
 /////////////////////////////////////////////////////////////////
 

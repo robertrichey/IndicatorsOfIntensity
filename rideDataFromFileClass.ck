@@ -185,117 +185,20 @@ getMax(cadenceAverages) => float maxAverageCadence;
 getMin(heartRateAverages) => float minAverageHeartRate;
 getMax(heartRateAverages) => float maxAverageHeartRate;
 
-<<< minAveragePower, maxAveragePower, minAverageSpeed, maxAverageSpeed >>>;
-<<< minAverageCadence, maxAverageCadence, minAverageHeartRate, maxAverageHeartRate >>>;
 
-
-//---------- PATCH ----------//
-
-
-HevyMetl instrument1 => Pan2 pan1 => dac;
-HevyMetl instrument2 => Pan2 pan2 => dac;
-HevyMetl instrument3 => Pan2 pan3 => dac;
-HevyMetl instrument4 => Pan2 pan4 => dac;
-
-0.2 => instrument1.gain;
-0.2 => instrument2.gain;
-0.3 => instrument3.gain;
-0.4 => instrument4.gain;
-
-0.95 => pan1.pan;
-0.65 => pan2.pan;
--0.65 => pan3.pan;
--0.95 => pan4.pan;
-
-500::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
-q * 2 => dur h;
-q * 4 => dur w;
-q / 2 => dur e;
-q / 4 => dur s;
-
-[
-[w],
-[h,h],
-[h,q,q],
-[q,q,q,q],
-
-[q,e,e,q,e,e],
-[e,e,q,e,q,e],
-[e,s,s,q,e,e,e,s,s],
-[e,e, s,s,s,s, e,e, s,s,s,s],
-
-[s,s,e, e,s,s, s,s,e, e,s,s],
-[e,q,e, s,e,s, s,s,s,s],
-[s,e,s, s,s,s,e, s,s,s, e,e],
-[s,s,s,s, s,s,s,s, s,s,s,s, s,s,s,s]
-] @=> dur rhythms[][];
-
-[37, 39, 41, 43, 45, 47] @=> int wt1[];
-
-[36, 38, 40, 42, 44, 46] @=> int wt2[];
-
-[36, 38, 39, 41, 42, 44, 45, 47] @=> int oct[];
-
-[36, 38, 40, 41, 43, 45, 47] @=> int maj[];
-
-// [36, 40, 43] @=> int maj[];
-
-
-// rite - use octaves 2,0,2,0
-[51, 54, 57, 60] @=> int rite1[];
-[36, 40, 43, 48] @=> int rite2[];
-
-[36, 37, 38, 39, 40, 41, 
- 42, 43, 44, 45, 46, 47] @=> int chrom[];
-
-
-spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, oct, 3); // 3
-spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, maj, 0); // 0
-spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, rite2, 2); // 2
-spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, rite1, 0); // 1
-8.75::minute => now;
-
-fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chord[], int octave) {
-    0.9 => float threshold;
-   
-    for (0 => int i; i < values.size(); i++) {
-        Std.ftoi(getTransformation(
-        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
-
-        for (0 => int j; j < rhythms[row].size(); j++) { 
-            Std.mtof(chord[Math.random2(0, chord.size()-1)] + 12 * octave) => instrument.freq;
-            // Math.random2f(0.1, 0.5) => instrument.gain;
-            
-            Math.random2f(0, 1) => float chance;
-
-            if (chance > threshold) {
-                1 => instrument.noteOn;
-                rhythms[row][j]=> now;
-                1 => instrument.noteOff;
-            }
-            else {
-                rhythms[row][j]=> now;
-            }
-        }
-        // assume grain of 50
-        if (i < 160) {
-            0.005 -=> threshold;
-        }
-        else {
-            0.008 +=> threshold;
-        }
-    }
+fun void playEnv() {
+    totalDuration * 0.75 :: ms => env.duration;
+    env.keyOn();
+    env.duration() => now;
+    totalDuration * 0.25 :: ms => env.duration;
+    env.keyOff();
 }
-
-
-
-/////////////////////////////////////////////////////////////////
-
 
 
 fun float getAverage(float sum, int numItems) {
     return sum / numItems;
 }
+
 
 fun float getMin(float arr[]) {
     arr[0] => float min;
@@ -308,6 +211,7 @@ fun float getMin(float arr[]) {
     return min;
 }
 
+
 fun float getMax(float arr[]) {
     arr[0] => float max;
     
@@ -317,14 +221,4 @@ fun float getMax(float arr[]) {
         }
     }
     return max;
-}
-
-
-/** 
- * Linear transformation:
- * For a given value between [a, b], return corresponding value between [c, d]
- * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
- */
-fun float getTransformation(float a, float b, float c, float d, float x) {
-    return (x - a) / (b - a) * (d - c) + c;
 }

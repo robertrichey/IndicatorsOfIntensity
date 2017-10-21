@@ -189,92 +189,90 @@ getMax(heartRateAverages) => float maxAverageHeartRate;
 <<< minAverageCadence, maxAverageCadence, minAverageHeartRate, maxAverageHeartRate >>>;
 
 
+//---------- MIDI -----------//
+
+
+4 => int numberOfVoices;
+
+// MIDI out setup 
+MidiOut mout[numberOfVoices];
+
+for (0 => int i; i < numberOfVoices; i++) {
+    // try to open that port, fail gracefully
+    if(!mout[i].open(i)) {
+        <<< "Error: MIDI port did not open on port: ", i >>>;
+        me.exit();
+    }
+}
+
+
 //---------- PATCH ----------//
 
 
-HevyMetl instrument1 => Pan2 pan1 => dac;
-HevyMetl instrument2 => Pan2 pan2 => dac;
-HevyMetl instrument3 => Pan2 pan3 => dac;
-HevyMetl instrument4 => Pan2 pan4 => dac;
-
-0.2 => instrument1.gain;
-0.2 => instrument2.gain;
-0.3 => instrument3.gain;
-0.4 => instrument4.gain;
-
-0.95 => pan1.pan;
-0.65 => pan2.pan;
--0.65 => pan3.pan;
--0.95 => pan4.pan;
-
-500::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
+600::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
 q * 2 => dur h;
 q * 4 => dur w;
 q / 2 => dur e;
 q / 4 => dur s;
 
+q / 3 => dur t;
+q / 6 => dur s6;
+t * 2 => dur qt;
+
+q / 5 => dur q5;
+
 [
 [w],
 [h,h],
 [h,q,q],
-[q,q,q,q],
+[qt,q,q],
 
 [q,e,e,q,e,e],
 [e,e,q,e,q,e],
 [e,s,s,q,e,e,e,s,s],
-[e,e, s,s,s,s, e,e, s,s,s,s],
+[e,e, t,t,t, e,e, s,s,s,s],
 
-[s,s,e, e,s,s, s,s,e, e,s,s],
-[e,q,e, s,e,s, s,s,s,s],
-[s,e,s, s,s,s,e, s,s,s, e,e],
-[s,s,s,s, s,s,s,s, s,s,s,s, s,s,s,s]
+[qt, t,t, q,s,e,s, t,t,t,t],
+[q, q5,q5,q5,q5,q5, e,e, q5,q5,q5,q5,q5],
+[t,t,s6,s6, t,s6,s6,s6,s6, s6,s6,s6,s6,s6,s6],
+[e,t,s,q5,s6, s,t,t, s,e,s,s6, q5,q5,q5,q5,s6,s6,s6,s6]
 ] @=> dur rhythms[][];
 
-[37, 39, 41, 43, 45, 47] @=> int wt1[];
+[37, 39, 41, 44, 46] @=> int chord1[];
+[36, 38, 40, 43, 45] @=> int chord2[];
+[41, 46, 47] @=> int chord3[];
+[36, 40, 43] @=> int chord4[];
 
-[36, 38, 40, 42, 44, 46] @=> int wt2[];
-
-[36, 38, 39, 41, 42, 44, 45, 47] @=> int oct[];
-
-[36, 38, 40, 41, 43, 45, 47] @=> int maj[];
-
-// [36, 40, 43] @=> int maj[];
-
-
-// rite - use octaves 2,0,2,0
-[51, 54, 57, 60] @=> int rite1[];
-[36, 40, 43, 48] @=> int rite2[];
+[51, 54, 57, 60] @=> int chord5[];
+[36, 40, 43, 48] @=> int chord6[];
 
 [36, 37, 38, 39, 40, 41, 
- 42, 43, 44, 45, 46, 47] @=> int chrom[];
+ 42, 43, 44, 45, 46, 47] @=> int chord[];
 
 
-spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, oct, 3); // 3
-spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, maj, 0); // 0
-spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, rite2, 2); // 2
-spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, rite1, 0); // 1
+spork ~ play(minAveragePower, maxAveragePower, powerAverages, 62, 3); // 3
+spork ~ play(minAverageSpeed, maxAverageSpeed, speedAverages, 64, 0); // 0
+spork ~ play(minAverageCadence, maxAverageCadence, cadenceAverages, 65, 2); // 2
+spork ~ play(minAverageHeartRate, maxAverageHeartRate, heartRateAverages, 67, 1); // 1
 8.75::minute => now;
 
-fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chord[], int octave) {
+fun void play(float oldBottom, float oldTop, float values[], int note, int voice) {
     0.9 => float threshold;
    
     for (0 => int i; i < values.size(); i++) {
         Std.ftoi(getTransformation(
-        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
+            oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
 
-        for (0 => int j; j < rhythms[row].size(); j++) { 
-            Std.mtof(chord[Math.random2(0, chord.size()-1)] + 12 * octave) => instrument.freq;
-            // Math.random2f(0.1, 0.5) => instrument.gain;
-            
+        for (0 => int j; j < rhythms[row].size(); j++) {
             Math.random2f(0, 1) => float chance;
 
             if (chance > threshold) {
-                1 => instrument.noteOn;
-                rhythms[row][j]=> now;
-                1 => instrument.noteOff;
+                MIDInote(voice, 1, note, 60);
+                rhythms[row][j] => now;
+                MIDInote(voice, 0, note, 60);
             }
             else {
-                rhythms[row][j]=> now;
+                rhythms[row][j] => now;
             }
         }
         // assume grain of 50
@@ -287,7 +285,19 @@ fun void play(StkInstrument instrument, float oldBottom, float oldTop, float val
     }
 }
 
-
+fun void MIDInote(int which, int onOff, int note, int velocity) {
+    MidiMsg msg;
+    
+    if(onOff == 0) {
+        128 => msg.data1;
+    }
+    else {
+        144 => msg.data1;
+    } 
+    note => msg.data2;
+    velocity => msg.data3; 
+    mout[which].send(msg);
+}
 
 /////////////////////////////////////////////////////////////////
 

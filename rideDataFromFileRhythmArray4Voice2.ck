@@ -28,11 +28,13 @@ for (0 => int i; i < numberOfSamples; i++) {
 file.close();
 
 
-// Read heart rate data into array
+// Read heart rate data into array - BROKEN
+
 file.open("textfiles/heartRate.txt", FileIO.READ);
 
 for (0 => int i; i < numberOfSamples; i++) {
     file => samples[i].heartRate.current;
+    //<<<i, samples[i].heartRate.current>>>;
 }
 file.close();
 
@@ -230,42 +232,24 @@ q / 4 => dur s;
 [s,s,s,s, s,s,s,s, s,s,s,s, s,s,s,s]
 ] @=> dur rhythms[][];
 
-[37, 39, 41, 43, 45, 47] @=> int wt1[];
 
-[36, 38, 40, 42, 44, 46] @=> int wt2[];
-
-[36, 38, 39, 41, 42, 44, 45, 47] @=> int oct[];
-
-[36, 38, 40, 41, 43, 45, 47] @=> int maj[];
-
-// [36, 40, 43] @=> int maj[];
-
-
-// rite - use octaves 2,0,2,0
-[51, 54, 57, 60] @=> int rite1[];
-[36, 40, 43, 48] @=> int rite2[];
-
-[36, 37, 38, 39, 40, 41, 
- 42, 43, 44, 45, 46, 47] @=> int chrom[];
-
-
-spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, oct, 3); // 3
-spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, maj, 0); // 0
-spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, rite2, 2); // 2
-spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, rite1, 0); // 1
+spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, 3);
+spork ~ play1(instrument2, minAverageSpeed, maxAverageSpeed, speedAverages, 2);
+spork ~ play2(instrument3, minAverageCadence, maxAverageCadence, cadenceAverages, 1);
+spork ~ play3(instrument4, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, 0);
 8.75::minute => now;
 
-fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chord[], int octave) {
+fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int octave) {
     0.9 => float threshold;
-   
+    0 => int sampleIndex;
+    
     for (0 => int i; i < values.size(); i++) {
         Std.ftoi(getTransformation(
         oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
 
         for (0 => int j; j < rhythms[row].size(); j++) { 
-            Std.mtof(chord[Math.random2(0, chord.size()-1)] + 12 * octave) => instrument.freq;
-            // Math.random2f(0.1, 0.5) => instrument.gain;
-            
+            <<< samples[sampleIndex].power.current % 12 + 36, "p" >>>;
+            Std.mtof((samples[sampleIndex++].power.current % 12 + 36) + 12 * octave) => instrument.freq;
             Math.random2f(0, 1) => float chance;
 
             if (chance > threshold) {
@@ -287,6 +271,101 @@ fun void play(StkInstrument instrument, float oldBottom, float oldTop, float val
     }
 }
 
+fun void play1(StkInstrument instrument, float oldBottom, float oldTop, float values[], int octave) {
+    0.9 => float threshold;
+    0 => int sampleIndex;
+    
+    for (0 => int i; i < values.size(); i++) {
+        Std.ftoi(getTransformation(
+        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
+        
+        for (0 => int j; j < rhythms[row].size(); j++) { 
+            <<< Math.round(samples[sampleIndex].speed.current) % 12 + 36 >>>;
+            Std.mtof((Math.round(samples[sampleIndex++].speed.current) % 12 + 36) + 12 * octave) => instrument.freq;
+            Math.random2f(0, 1) => float chance;
+            
+            if (chance > threshold) {
+                1 => instrument.noteOn;
+                rhythms[row][j]=> now;
+                1 => instrument.noteOff;
+            }
+            else {
+                rhythms[row][j]=> now;
+            }
+        }
+        // assume grain of 50
+        if (i < 160) {
+            0.005 -=> threshold;
+        }
+        else {
+            0.008 +=> threshold;
+        }
+    }
+}
+
+fun void play2(StkInstrument instrument, float oldBottom, float oldTop, float values[], int octave) {
+    0.9 => float threshold;
+    0 => int sampleIndex;
+    
+    for (0 => int i; i < values.size(); i++) {
+        Std.ftoi(getTransformation(
+        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
+        
+        for (0 => int j; j < rhythms[row].size(); j++) { 
+            <<< samples[sampleIndex].cadence.current % 12 + 36, "cad" >>>;
+            Std.mtof((samples[sampleIndex++].cadence.current % 12 + 36) + 12 * octave) => instrument.freq;
+            Math.random2f(0, 1) => float chance;
+            
+            if (chance > threshold) {
+                1 => instrument.noteOn;
+                rhythms[row][j]=> now;
+                1 => instrument.noteOff;
+            }
+            else {
+                rhythms[row][j]=> now;
+            }
+        }
+        // assume grain of 50
+        if (i < 160) {
+            0.005 -=> threshold;
+        }
+        else {
+            0.008 +=> threshold;
+        }
+    }
+}
+
+fun void play3(StkInstrument instrument, float oldBottom, float oldTop, float values[], int octave) {
+    0.9 => float threshold;
+    0 => int sampleIndex;
+    
+    for (0 => int i; i < values.size(); i++) {
+        Std.ftoi(getTransformation(
+        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
+        
+        for (0 => int j; j < rhythms[row].size(); j++) { 
+            <<< samples[sampleIndex].heartRate.current % 12 + 36, "hr" >>>;
+            Std.mtof((samples[sampleIndex++].heartRate.current % 12 + 36) + 12 * octave) => instrument.freq;
+            Math.random2f(0, 1) => float chance;
+            
+            if (chance > threshold) {
+                1 => instrument.noteOn;
+                rhythms[row][j]=> now;
+                1 => instrument.noteOff;
+            }
+            else {
+                rhythms[row][j]=> now;
+            }
+        }
+        // assume grain of 50
+        if (i < 160) {
+            0.005 -=> threshold;
+        }
+        else {
+            0.008 +=> threshold;
+        }
+    }
+}
 
 
 /////////////////////////////////////////////////////////////////

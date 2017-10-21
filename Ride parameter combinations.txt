@@ -1,0 +1,36 @@
+functionality notes
+- sing into hope balloon to get attention
+- ballon goes on user profile
+- alert goes to all friends
+
+
+
+p s c h
+p s h c
+p c s h
+p c h s
+p h s c
+p h c s
+
+s p h c
+s p c h
+s c h p
+s c p h
+s h c p
+s h p c
+
+c s h p
+c s p h
+c p h s
+c p s h
+c h s p
+c h p s
+
+h s c p
+h s p c
+h p c s
+h p s c
+h c p s
+h c s p
+
+

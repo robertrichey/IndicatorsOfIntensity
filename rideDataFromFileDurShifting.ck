@@ -189,113 +189,124 @@ getMax(heartRateAverages) => float maxAverageHeartRate;
 <<< minAverageCadence, maxAverageCadence, minAverageHeartRate, maxAverageHeartRate >>>;
 
 
+
+/////// WORKSPACE ////////
+
+
+0 => float totalSpeedAverage;
+0 => float totalPowerAverage;
+0 => float totalCadenceAverage;
+0 => float totalHeartRateAverage;
+
+for (0 => int i; i < cadenceAverages.size(); i++) {
+    speedAverages[i] +=> totalSpeedAverage;
+    powerAverages[i] +=> totalPowerAverage;
+    cadenceAverages[i] +=> totalCadenceAverage;
+    heartRateAverages[i] +=> totalHeartRateAverage;
+} 
+
+240000 => float totalDuration; // 60,000 ms == 1 min
+
+totalSpeedAverage / totalDuration => float speedRatio;
+totalPowerAverage / totalDuration => float powerRatio;
+totalCadenceAverage / totalDuration => float cadenceRatio;
+totalHeartRateAverage / totalDuration => float heartRateRatio;
+
+//////////////////////////
+
+
 //---------- PATCH ----------//
 
 
-HevyMetl instrument1 => Pan2 pan1 => dac;
-HevyMetl instrument2 => Pan2 pan2 => dac;
-HevyMetl instrument3 => Pan2 pan3 => dac;
-HevyMetl instrument4 => Pan2 pan4 => dac;
+TriOsc instrument1 => NRev rev;//Envelope env1 => NRev rev;
+TriOsc instrument2 => rev;//Envelope env2 => rev;
+TriOsc instrument3 => rev => dac;//Envelope env3 => rev => dac;
 
+0.0 => instrument3.gain;
+
+0. => rev.mix;
 0.2 => instrument1.gain;
 0.2 => instrument2.gain;
-0.3 => instrument3.gain;
-0.4 => instrument4.gain;
 
-0.95 => pan1.pan;
-0.65 => pan2.pan;
--0.65 => pan3.pan;
--0.95 => pan4.pan;
+//1::ms => env1.duration => env2.duration;
 
-500::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
-q * 2 => dur h;
-q * 4 => dur w;
-q / 2 => dur e;
-q / 4 => dur s;
+//500::ms => env3.duration;
 
-[
-[w],
-[h,h],
-[h,q,q],
-[q,q,q,q],
-
-[q,e,e,q,e,e],
-[e,e,q,e,q,e],
-[e,s,s,q,e,e,e,s,s],
-[e,e, s,s,s,s, e,e, s,s,s,s],
-
-[s,s,e, e,s,s, s,s,e, e,s,s],
-[e,q,e, s,e,s, s,s,s,s],
-[s,e,s, s,s,s,e, s,s,s, e,e],
-[s,s,s,s, s,s,s,s, s,s,s,s, s,s,s,s]
-] @=> dur rhythms[][];
-
-[37, 39, 41, 43, 45, 47] @=> int wt1[];
-
-[36, 38, 40, 42, 44, 46] @=> int wt2[];
-
-[36, 38, 39, 41, 42, 44, 45, 47] @=> int oct[];
-
-[36, 38, 40, 41, 43, 45, 47] @=> int maj[];
-
-// [36, 40, 43] @=> int maj[];
+//1 => env1.keyOn => env2.keyOn => env3.keyOn;
 
 
-// rite - use octaves 2,0,2,0
-[51, 54, 57, 60] @=> int rite1[];
-[36, 40, 43, 48] @=> int rite2[];
+spork ~ play(instrument1, minAveragePower, maxAveragePower, 60, 72, powerAverages, 
+    speedAverages, speedRatio, minAverageCadence, maxAverageCadence, cadenceAverages);
+    
+    //spork ~ play(instrument3, env3, minAverageHeartRate, maxAverageHeartRate, 48, 60, 
+    //heartRateAverages, totalDuration / heartRateAverages.size());
+    
+spork ~ play(instrument2, minAverageSpeed, maxAverageSpeed, 72, 84, speedAverages, 
+    powerAverages, powerRatio, minAverageHeartRate, maxAverageHeartRate, heartRateAverages);
 
-[36, 37, 38, 39, 40, 41, 
- 42, 43, 44, 45, 46, 47] @=> int chrom[];
+//1 => env1.keyOff => env2.keyOff => env3.keyOff;
+
+1::hour => now;
+////////////////////////////////////////////////////
 
 
-spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, oct, 3); // 3
-spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, maj, 0); // 0
-spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, rite2, 2); // 2
-spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, rite1, 0); // 1
-8.75::minute => now;
-
-fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chord[], int octave) {
-    0.9 => float threshold;
-   
-    for (0 => int i; i < values.size(); i++) {
-        Std.ftoi(getTransformation(
-        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
-
-        for (0 => int j; j < rhythms[row].size(); j++) { 
-            Std.mtof(chord[Math.random2(0, chord.size()-1)] + 12 * octave) => instrument.freq;
-            // Math.random2f(0.1, 0.5) => instrument.gain;
+fun void play(TriOsc instrument, float oldBottom, float oldTop, float newBottom, 
+    float newTop, float values[], float durationValues[], float ratio, float gainBottom, 
+    float gainTop, float gainValues[]) {
+        
+    for (0 => int i; i < values.size() - 1; i++) {
+        Std.mtof(getTransformation(oldBottom, oldTop, newBottom, 
+            newTop, values[i])) => float startFreq; 
             
-            Math.random2f(0, 1) => float chance;
-
-            if (chance > threshold) {
-                1 => instrument.noteOn;
-                rhythms[row][j]=> now;
-                1 => instrument.noteOff;
-            }
-            else {
-                rhythms[row][j]=> now;
-            }
-        }
-        // assume grain of 50
-        if (i < 160) {
-            0.005 -=> threshold;
-        }
-        else {
-            0.008 +=> threshold;
-        }
+        Std.mtof(getTransformation(oldBottom, oldTop, newBottom, 
+            newTop, values[i + 1])) => float endFreq;
+            
+        getTransformation(gainBottom, gainTop, 0.1, 0.6, 
+            gainValues[i]) => float startGain;
+        
+        getTransformation(gainBottom, gainTop, 0.1, 0.6, 
+            gainValues[i + 1]) => float endGain;
+        
+        Std.ftoi(Math.round(durationValues[i] / ratio)) => int duration;
+        
+        spork ~ shiftGain(instrument, startGain, endGain, duration);
+        shiftPitch(instrument, startFreq, endFreq, duration);
+        500::ms => now; 
     }
+    <<< "Done" >>>;
 }
 
+fun void shiftPitch(TriOsc instrument, float start, float finish, int duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => instrument.freq;
+    
+    for (0 => int i; i < duration; i++) {
+        grain +=> current;
+        current => instrument.freq;
+        1::ms => now;
+    }
+    finish => instrument.freq;
+}
 
-
-/////////////////////////////////////////////////////////////////
-
+fun void shiftGain(TriOsc instrument, float start, float finish, int duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => instrument.gain;
+    
+    for (0 => int i; i < duration; i++) {
+        grain +=> current;
+        current => instrument.gain;
+        1::ms => now;
+    }
+    finish => instrument.gain;
+}
 
 
 fun float getAverage(float sum, int numItems) {
     return sum / numItems;
 }
+
 
 fun float getMin(float arr[]) {
     arr[0] => float min;
@@ -307,6 +318,7 @@ fun float getMin(float arr[]) {
     }
     return min;
 }
+
 
 fun float getMax(float arr[]) {
     arr[0] => float max;

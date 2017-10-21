@@ -125,7 +125,7 @@ for (1 => int i; i < numberOfSamples; i++) {
 // Round down to nearest 1000
 numberOfSamples % 1000 -=> numberOfSamples;
 
-50 => int averageGrain;
+100 => int averageGrain;
 
 numberOfSamples / averageGrain => int arraySize;
 
@@ -152,20 +152,20 @@ for (0 => int i; i < numberOfSamples; i++) {
     samples[i].speed.current +=> speed;
     samples[i].cadence.current +=> cadence;
     samples[i].heartRate.current +=> heartRate;
-            
+    
     if (count % averageGrain == 0 && count != 0) {
         power / averageGrain => powerAverages[index];
         0 => power;
         
         speed / averageGrain => speedAverages[index];
         0 => speed;
-       
+        
         cadence / averageGrain => cadenceAverages[index];
         0 => cadence;
         
         heartRate / averageGrain => heartRateAverages[index];
         0 => heartRate;
-                
+        
         index++;
         0 => count;
     }
@@ -191,105 +191,121 @@ getMax(heartRateAverages) => float maxAverageHeartRate;
 
 //---------- PATCH ----------//
 
+// create patch, keep quiet until OSC message is receved
+SinOsc modulator => TriOsc carrier => NRev rev => dac;
+// Envelope env =>
 
-HevyMetl instrument1 => Pan2 pan1 => dac;
-HevyMetl instrument2 => Pan2 pan2 => dac;
-HevyMetl instrument3 => Pan2 pan3 => dac;
-HevyMetl instrument4 => Pan2 pan4 => dac;
+0.0 => rev.mix;
+0.3 => carrier.gain;
+0 => modulator.freq;
+0 => modulator.gain;
 
-0.2 => instrument1.gain;
-0.2 => instrument2.gain;
-0.3 => instrument3.gain;
-0.4 => instrument4.gain;
+// Tell the oscillator to interpret input as frequency modulation
+2 => carrier.sync;
 
-0.95 => pan1.pan;
-0.65 => pan2.pan;
--0.65 => pan3.pan;
--0.95 => pan4.pan;
+750 => int shiftDur;
 
-500::ms => dur q; // 500 ms = 8.75 min, 400 ms = 7 min
-q * 2 => dur h;
-q * 4 => dur w;
-q / 2 => dur e;
-q / 4 => dur s;
-
-[
-[w],
-[h,h],
-[h,q,q],
-[q,q,q,q],
-
-[q,e,e,q,e,e],
-[e,e,q,e,q,e],
-[e,s,s,q,e,e,e,s,s],
-[e,e, s,s,s,s, e,e, s,s,s,s],
-
-[s,s,e, e,s,s, s,s,e, e,s,s],
-[e,q,e, s,e,s, s,s,s,s],
-[s,e,s, s,s,s,e, s,s,s, e,e],
-[s,s,s,s, s,s,s,s, s,s,s,s, s,s,s,s]
-] @=> dur rhythms[][];
-
-[37, 39, 41, 43, 45, 47] @=> int wt1[];
-
-[36, 38, 40, 42, 44, 46] @=> int wt2[];
-
-[36, 38, 39, 41, 42, 44, 45, 47] @=> int oct[];
-
-[36, 38, 40, 41, 43, 45, 47] @=> int maj[];
-
-// [36, 40, 43] @=> int maj[];
-
-
-// rite - use octaves 2,0,2,0
-[51, 54, 57, 60] @=> int rite1[];
-[36, 40, 43, 48] @=> int rite2[];
-
-[36, 37, 38, 39, 40, 41, 
- 42, 43, 44, 45, 46, 47] @=> int chrom[];
-
-
-spork ~ play(instrument1, minAveragePower, maxAveragePower, powerAverages, oct, 3); // 3
-spork ~ play(instrument4, minAverageSpeed, maxAverageSpeed, speedAverages, maj, 0); // 0
-spork ~ play(instrument2, minAverageCadence, maxAverageCadence, cadenceAverages, rite2, 2); // 2
-spork ~ play(instrument3, minAverageHeartRate, maxAverageHeartRate, heartRateAverages, rite1, 0); // 1
-8.75::minute => now;
-
-fun void play(StkInstrument instrument, float oldBottom, float oldTop, float values[], int chord[], int octave) {
-    0.9 => float threshold;
-   
-    for (0 => int i; i < values.size(); i++) {
-        Std.ftoi(getTransformation(
-        oldBottom, oldTop, 0, rhythms.size()-1, values[i])) => int row;        
-
-        for (0 => int j; j < rhythms[row].size(); j++) { 
-            Std.mtof(chord[Math.random2(0, chord.size()-1)] + 12 * octave) => instrument.freq;
-            // Math.random2f(0.1, 0.5) => instrument.gain;
-            
-            Math.random2f(0, 1) => float chance;
-
-            if (chance > threshold) {
-                1 => instrument.noteOn;
-                rhythms[row][j]=> now;
-                1 => instrument.noteOff;
-            }
-            else {
-                rhythms[row][j]=> now;
-            }
-        }
-        // assume grain of 50
-        if (i < 160) {
-            0.005 -=> threshold;
-        }
-        else {
-            0.008 +=> threshold;
-        }
-    }
+// Play sound based on average power over each 100 samples
+for (0 => int i; i < powerAverages.size() - 1; i++) {
+    Std.mtof(getTransformation(minAverageSpeed, maxAverageSpeed, 48, 84, speedAverages[i])) => 
+    float startCarFreq;
+    
+    Std.mtof(getTransformation(minAverageSpeed, maxAverageSpeed, 48, 84, speedAverages[i + 1])) => 
+    float endCarFreq;
+    
+    
+    getTransformation(minAverageCadence, maxAverageCadence, 0, 100, cadenceAverages[i]) => 
+    float startModFreq;
+    
+    getTransformation(minAverageCadence, maxAverageCadence, 0, 100, cadenceAverages[i + 1]) => 
+    float endModFreq;
+    
+    
+    getTransformation(minAveragePower, maxAveragePower, 0.05, 0.6, powerAverages[i]) => 
+    float startCarGain;
+    
+    getTransformation(minAveragePower, maxAveragePower, 0.05, 0.6, powerAverages[i + 1]) => 
+    float endCarGain;
+    
+    
+    getTransformation(minAverageHeartRate, maxAverageHeartRate, 1, 500, heartRateAverages[i]) => 
+    float startModGain;
+    
+    getTransformation(minAverageHeartRate, maxAverageHeartRate, 1, 500, heartRateAverages[i + 1]) => 
+    float endModGain;
+    
+    spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);
+    spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
+    spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
+    shiftModGain(startModGain, endModGain, shiftDur);
 }
 
+<<< "Done" >>>;
 
+/** 
+ * Linear transformation:
+ * For a given value between [a, b], return corresponding value between [c, d]
+ * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
+ */
+fun float getTransformation(float a, float b, float c, float d, float x) {
+    return (x - a) / (b - a) * (d - c) + c;
+}
 
-/////////////////////////////////////////////////////////////////
+fun void shiftCarPitch(float start, float finish, int duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => carrier.freq;
+    
+    for (0 => int i; i < duration; i++) {
+        //<<< s.freq() >>>;
+        grain +=> current;
+        current => carrier.freq;
+        1::ms => now;
+    }
+    finish => carrier.freq;
+}
+
+fun void shiftCarGain(float start, float finish, int duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => carrier.gain;
+    
+    for (0 => int i; i < duration; i++) {
+        //<<< s.freq() >>>;
+        grain +=> current;
+        current => carrier.gain;
+        1::ms => now;
+    }
+    finish => carrier.gain;
+}
+
+fun void shiftModPitch(float start, float finish, int duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => modulator.freq;
+    
+    for (0 => int i; i < duration; i++) {
+        //<<< s.freq() >>>;
+        grain +=> current;
+        current => modulator.freq;
+        1::ms => now;
+    }
+    finish => modulator.freq;
+}
+
+fun void shiftModGain(float start, float finish, int duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => modulator.gain;
+    
+    for (0 => int i; i < duration; i++) {
+        //<<< s.freq() >>>;
+        grain +=> current;
+        current => modulator.gain;
+        1::ms => now;
+    }
+    finish => modulator.gain;
+}
 
 
 
@@ -317,14 +333,4 @@ fun float getMax(float arr[]) {
         }
     }
     return max;
-}
-
-
-/** 
- * Linear transformation:
- * For a given value between [a, b], return corresponding value between [c, d]
- * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
- */
-fun float getTransformation(float a, float b, float c, float d, float x) {
-    return (x - a) / (b - a) * (d - c) + c;
 }

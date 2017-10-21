@@ -1,13 +1,13 @@
 //---------- PATCH ----------//
 
 // create patch, keep quiet until OSC message is receved
-SinOsc modulator => SinOsc carrier => NRev rev => dac;
+SinOsc modulator => TriOsc carrier => NRev rev => dac;
 // Envelope env =>
 
-0.15 => rev.mix;
+0.0 => rev.mix;
 0.3 => carrier.gain;
-6 => modulator.freq;
-10 => modulator.gain;
+200 => modulator.freq;
+0 => modulator.gain;
 
 // Tell the oscillator to interpret input as frequency modulation
 2 => carrier.sync; 
@@ -16,14 +16,21 @@ SinOsc modulator => SinOsc carrier => NRev rev => dac;
 //---------- File I/O ----------//
 
 FileIO file;
-file.open("power.txt", FileIO.READ);
+
+// Get total number of samples and initialize array
+file.open("textfiles/numberOfSamples.txt", FileIO.READ);
+
+file => int numberOfSamples;
+Sample samples[numberOfSamples];
+file.close();
+
+
+// Read power data into array
+file.open("textfiles/power.txt", FileIO.READ);
 
 
 //---------- MAIN ----------//
 
-// Get total number of samples and initialize array
-file => int numberOfSamples;
-Sample samples[numberOfSamples];
 
 int averages[130]; // numberOfSamples = 13281, round to 1300 / 100
 
@@ -39,18 +46,22 @@ for (0 => int i; i < numberOfSamples; i++) {
 
 // Fill array with average of every 100 samples
 0 => int index;
+0 => int count;
 
 for (0 => int i; i < 13000; i++) {
+    count++;
+    
     samples[i].power.current +=> power;
     
-    if (i % 100 == 0 && i != 0) {
+    if (count % 100 == 0 && count != 0) {
         Std.ftoi(power / 100) => averages[index++];
         0 => power;
+        0 => count;
     }
 } 
 
 // Assign final index
-Std.ftoi(power / 100) => averages[index];
+//Std.ftoi(power / 100) => averages[index];
 
 500 => int minPower;
 0 => int maxPower;
@@ -69,20 +80,20 @@ for (0 => int i; i < averages.cap(); i++) {
 //<<< minPower, maxPower >>>;
 
 // Play sound based on average power over each 100 samples
-getTransformation(minPower, maxPower, 200, 3200, averages[0]) => 
-float current;
+//getTransformation(minPower, maxPower, 60, 84, averages[0]) => 
+//carrier.freq;
 
 for (0 => int i; i < averages.cap() - 1; i++) {
-    getTransformation(minPower, maxPower, 200, 3200, averages[i]) => 
+    Std.mtof(getTransformation(minPower, maxPower, 60, 84, averages[i])) => 
     float startFreq;
     
-    getTransformation(minPower, maxPower, 400, 3200, averages[i + 1]) => 
+    Std.mtof(getTransformation(minPower, maxPower, 60, 84, averages[i + 1])) => 
     float endFreq;
     
-    <<< averages[i], averages[i + 1] >>>;
+    <<< startFreq, endFreq, i, i+1 >>>;
     
     //spork ~ 
-    shiftPitch(startFreq, endFreq, 3000);
+    shiftPitch(startFreq, endFreq, 1000);
     //500::ms => now;
     
     /* // Envelope stuff
@@ -109,8 +120,10 @@ fun float getTransformation(float a, float b, float c, float d, float x) {
 fun void shiftPitch(float start, float finish, int duration) {
     finish - start => float diff;
     diff / duration => float grain;
+    start => float current => carrier.freq;
     
     for (0 => int i; i < duration; i++) {
+        //<<< s.freq() >>>;
         grain +=> current;
         current => carrier.freq;
         1::ms => now;
