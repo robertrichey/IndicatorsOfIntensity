@@ -153,6 +153,14 @@ makePatch(mandolin, numMandolinVoices, rev);
 
 rev => dac;
 
+SqrOsc square => Envelope sEnv => dac;
+0.05 => square.gain;
+
+0 => int lastDrum;
+1 => int isSquareOff;
+
+90 => int sampleRate;
+
 0.1 => rev.mix;
 
 
@@ -188,13 +196,21 @@ for (1 => int i; i < numberOfSamples; i++) {
         <<< i, "cadence = 0" >>>;
     }
     if (samples[i].power.current == 0) {
-        spork ~ play(buff, buffVoices);
         <<< i, "power = 0" >>>;
+        
+        spork ~ play(buff, buffVoices, i);
+        
+        if (isSquareOff && i - lastDrum > 55) { // 55 * 90 ~= 5000 ms 
+            <<< i, "-", lastDrum, "=", i - lastDrum,
+            "(" + Std.itoa((i - lastDrum) * sampleRate) + " ms)" >>>;
+            spork ~ playSqr(i, lastDrum);
+        }
+        i => lastDrum;
     }
     else {
         // <<< i, "" >>>;
     }
-    45::ms => now;
+    sampleRate::ms => now;
 }
 
 // Let sounds fade
@@ -242,12 +258,12 @@ fun void makePatch(Mandolin instrument[], int numVoices, NRev rev) {
     }
 }
 
-fun void play(SndBuf instrument[], int voices[]) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(SndBuf instrument[], int voices[], int i) {                                                                                  // "1" or "2", selects scale or random frequencies
     getVoice(voices) => int which;
     
     if (which > -1) {
-        0 => instrument[which].pos;   
-        instrument[which].length() => now;    
+        0 => instrument[which].pos;
+        instrument[which].length() => now;
         0 => voices[which];   
     }
 }
@@ -337,6 +353,18 @@ fun void play(SinOsc instrument[], Envelope env[], int voices[]) {              
     }
 }
 
+fun void playSqr(int i, int lastDrum) {
+    (((i - lastDrum) * sampleRate) / 2.0)::ms => sEnv.duration;
+    <<< ((i - lastDrum) * sampleRate) / 2.0, 5555555 >>>;
+    
+    0 => isSquareOff;
+    sEnv.keyOn();
+    sEnv.duration() => now;
+    sEnv.keyOff();
+    sEnv.duration() => now;
+    1 => isSquareOff;
+}
+
 fun void setGain(Wurley instrument[], int voices, float gain) {
     for (0 => int i; i < voices; i++) {
         gain => instrument[i].gain;
@@ -402,10 +430,10 @@ fun float getMax(float arr[]) {
 
 
 /** 
- * Linear transformation:
- * For a given value between [a, b], return corresponding value between [c, d]
- * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
- */
+* Linear transformation:
+* For a given value between [a, b], return corresponding value between [c, d]
+* source: https://stackoverflow.com/questions/345187/math-mapping-numbers
+*/
 fun float getTransformation(float a, float b, float c, float d, float x) {
     return (x - a) / (b - a) * (d - c) + c;
 }
