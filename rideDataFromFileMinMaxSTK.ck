@@ -156,16 +156,20 @@ rev => dac;
 SqrOsc square => Envelope sEnv => dac;
 0.05 => square.gain;
 
+// TODO: where to set?
+me.dir() + "bass_drum.wav" => buff[0].read;
+//buff[0].samples() => buff[0].pos;
+
+// TODO: bad use of global, bool?
 0 => int lastDrum;
-1 => int isSquareOff;
+1 => int isSquareOff; 
 
 90 => int sampleRate;
 
 0.1 => rev.mix;
 
-
-me.dir() + "bass_drum.wav" => buff[0].read;
-buff[0].samples() => buff[0].pos;
+// TODO: how to handle global array?
+[100, 200, 400, 800] @=> int durations[];
 
 
 for (1 => int i; i < numberOfSamples; i++) {
@@ -200,7 +204,7 @@ for (1 => int i; i < numberOfSamples; i++) {
         
         spork ~ play(buff, buffVoices, i);
         
-        if (isSquareOff && i - lastDrum > 55) { // 55 * 90 ~= 5000 ms 
+        if (isSquareOff && i - lastDrum > 55 && 0) { // 55 * 90 ~= 5000 ms 
             <<< i, "-", lastDrum, "=", i - lastDrum,
             "(" + Std.itoa((i - lastDrum) * sampleRate) + " ms)" >>>;
             spork ~ playSqr(i, lastDrum);
@@ -258,17 +262,24 @@ fun void makePatch(Mandolin instrument[], int numVoices, NRev rev) {
     }
 }
 
-fun void play(SndBuf instrument[], int voices[], int i) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(SndBuf instrument[], int voices[], int i) {
     getVoice(voices) => int which;
     
     if (which > -1) {
-        0 => instrument[which].pos;
-        instrument[which].length() => now;
-        0 => voices[which];   
+        [0.3, 1.0, 4.0] @=> float rates[];
+        
+        for (0 => int i; i < 3; i++) {
+            if (Math.random2f(0.0, 1.0) > 0.33) {
+                rates[Math.random2(0, rates.size()-1)] => instrument[which].rate;
+                0 => instrument[which].pos;
+                Math.random2f(durations[1], durations[durations.size()-1]) * Math.random2(1, 1)::ms => now;
+            }
+        }
+        0 => voices[which];
     }
 }
 
-fun void play(Mandolin instrument[], int voices[]) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(Mandolin instrument[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
@@ -283,14 +294,12 @@ fun void play(Mandolin instrument[], int voices[]) {                            
     }
 }
 
-fun void play(Flute instrument[], int voices[]) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(Flute instrument[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
         Math.random2(2, 8) => int numNotes;
-        
-        [100, 200, 400, 800] @=> int durations[];
-        
+                
         for (0 => int i; i < numNotes; i++) {
             Std.mtof(Math.random2(72, 96)) => instrument[which].freq;
             
@@ -302,13 +311,11 @@ fun void play(Flute instrument[], int voices[]) {                               
     }
 }
 
-fun void play(ModalBar instrument[], int voices[]) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(ModalBar instrument[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
         Math.random2(2, 8) => int numNotes;
-        
-        [100, 200, 400, 800] @=> int durations[];
         
         for (0 => int i; i < numNotes; i++) {
             Std.mtof(Math.random2(48, 72)) => instrument[which].freq;
@@ -325,7 +332,7 @@ fun void play(ModalBar instrument[], int voices[]) {                            
     }
 }
 
-fun void play(Wurley instrument[], int voices[]) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(Wurley instrument[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
@@ -337,7 +344,7 @@ fun void play(Wurley instrument[], int voices[]) {                              
     }
 }
 
-fun void play(SinOsc instrument[], Envelope env[], int voices[]) {                                                                                  // "1" or "2", selects scale or random frequencies
+fun void play(SinOsc instrument[], Envelope env[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
@@ -355,8 +362,8 @@ fun void play(SinOsc instrument[], Envelope env[], int voices[]) {              
 
 fun void playSqr(int i, int lastDrum) {
     (((i - lastDrum) * sampleRate) / 2.0)::ms => sEnv.duration;
-    <<< ((i - lastDrum) * sampleRate) / 2.0, 5555555 >>>;
     
+    durations[3]::ms => now;
     0 => isSquareOff;
     sEnv.keyOn();
     sEnv.duration() => now;
