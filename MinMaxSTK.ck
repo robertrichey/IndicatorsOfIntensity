@@ -201,20 +201,11 @@ for (1 => int i; i < numberOfSamples; i++) {
     }
     if (samples[i].power.current == 0) {
         <<< i, "power = 0" >>>;
-        
-        spork ~ play(buff, buffVoices, i);
-        
-        // fade fm wave in and out
-        if (wave.isOff && i - lastDrum > 55 will) { // 55 * 90 ~= 5000 ms 
-            <<< i, "-", lastDrum, "=", i - lastDrum,
-            "(" + Std.itoa((i - lastDrum) * sampleRate) + " ms)" >>>;
-            spork ~ wave.turnOn(i, lastDrum, sampleRate);
-
-        }
+        spork ~ play(buff, buffVoices, i, lastDrum);
         i => lastDrum;
     }
     else {
-        // <<< i, "" >>>;
+        //<<< i, "" >>>;
     }
     sampleRate::ms => now;
 }
@@ -264,7 +255,7 @@ fun void makePatch(Mandolin instrument[], int numVoices, NRev rev) {
     }
 }
 
-fun void play(SndBuf instrument[], int voices[], int i) {
+fun void play(SndBuf instrument[], int voices[], int i, int lastDrum) {
     getVoice(voices) => int which;
     
     if (which > -1) {
@@ -276,6 +267,15 @@ fun void play(SndBuf instrument[], int voices[], int i) {
                 0 => instrument[which].pos;
                 Math.random2f(durations[1], durations[durations.size()-1]) * Math.random2(1, 1)::ms => now;
             }
+        }
+        rates[Math.random2(0, rates.size()-1)] => instrument[which].rate;
+        0 => instrument[which].pos;
+        // fade fm wave in and out
+        if (wave.isOff && i - lastDrum > 55 && Math.random2f(0.0, 1.0) > 0.66) { // 55 * 90 ~= 5000 ms 
+            <<< i, "-", lastDrum, "=", i - lastDrum,
+            "(" + Std.itoa((i - lastDrum) * sampleRate) + " ms)" >>>;
+            wave.turnOn(i, lastDrum, sampleRate);
+            //<<< wave.isOff >>>;
         }
         0 => voices[which];
     }

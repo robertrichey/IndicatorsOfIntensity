@@ -5,7 +5,7 @@ public class ShiftingFMWave {
     1 => int isOff;
     // PATCH
     
-    SinOsc modulator => TriOsc carrier => Envelope env => NRev rev => dac;
+    SinOsc modulator => SqrOsc carrier => Envelope env => NRev rev => dac;
 
     0.1 => rev.mix;
     
@@ -19,10 +19,10 @@ public class ShiftingFMWave {
         // Play sound based on grain for total duration
         for (0 => int i; i < oscGrains.numberOfGrains - 1; i++) {
             
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 36, 96, oscGrains.power[i])) => 
+            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 24, 84, oscGrains.power[i])) => 
             float startCarFreq;
             
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 36, 96, oscGrains.power[i + 1])) => 
+            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 24, 84, oscGrains.power[i + 1])) => 
             float endCarFreq;
             
             
@@ -33,10 +33,10 @@ public class ShiftingFMWave {
             float endModFreq;
             
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.03, 0.1, oscGrains.cadence[i]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.03, 0.05, oscGrains.cadence[i]) => 
             float startCarGain;
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.03, 0.1, oscGrains.cadence[i + 1]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.03, 0.05, oscGrains.cadence[i + 1]) => 
             float endCarGain;
             
             
@@ -57,12 +57,15 @@ public class ShiftingFMWave {
     
     // TODO: document, use isOn bool function
     fun void turnOn(int a, int b, float sampleRate) {
-        (((a - b) * sampleRate) / 2.0)::ms => env.duration;
+        //(((a - b) * sampleRate) * 0.2)::ms => now;
         
-        1000::ms => now;
+        //500::ms => now;
         0 => isOff;
+        (((a - b) * sampleRate) / 2 * 0.005)::ms => env.duration;
         env.keyOn();
         env.duration() => now;
+        
+        (((a - b) * sampleRate) / 2 * 0.995)::ms => env.duration;
         env.keyOff();
         env.duration() => now;
         1 => isOff;
