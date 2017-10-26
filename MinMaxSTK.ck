@@ -153,21 +153,18 @@ makePatch(mandolin, numMandolinVoices, rev);
 
 rev => dac;
 
-SqrOsc square => Envelope sEnv => dac;
-0.05 => square.gain;
-
 // TODO: where to set?
 me.dir() + "bass_drum.wav" => buff[0].read;
 //buff[0].samples() => buff[0].pos;
 
 // TODO: bad use of global, bool?
 0 => int lastDrum;
-1 => int isSquareOff; 
 
 90 => int sampleRate;
 
 0.1 => rev.mix;
 
+// launch FM wave in background
 ShiftingFMWave wave;
 spork ~ wave.play();
 
@@ -207,10 +204,12 @@ for (1 => int i; i < numberOfSamples; i++) {
         
         spork ~ play(buff, buffVoices, i);
         
-        if (isSquareOff && i - lastDrum > 55 && 0) { // 55 * 90 ~= 5000 ms 
+        // fade fm wave in and out
+        if (wave.isOff && i - lastDrum > 55 will) { // 55 * 90 ~= 5000 ms 
             <<< i, "-", lastDrum, "=", i - lastDrum,
             "(" + Std.itoa((i - lastDrum) * sampleRate) + " ms)" >>>;
-            spork ~ playSqr(i, lastDrum);
+            spork ~ wave.turnOn(i, lastDrum, sampleRate);
+
         }
         i => lastDrum;
     }
@@ -361,18 +360,6 @@ fun void play(SinOsc instrument[], Envelope env[], int voices[]) {
         
         0 => voices[which]; 
     }
-}
-
-fun void playSqr(int i, int lastDrum) {
-    (((i - lastDrum) * sampleRate) / 2.0)::ms => sEnv.duration;
-    
-    durations[3]::ms => now;
-    0 => isSquareOff;
-    sEnv.keyOn();
-    sEnv.duration() => now;
-    sEnv.keyOff();
-    sEnv.duration() => now;
-    1 => isSquareOff;
 }
 
 fun void setGain(Wurley instrument[], int voices, float gain) {
