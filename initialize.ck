@@ -6,3 +6,5 @@ Machine.add(me.dir() + "/Speed.ck");
 Machine.add(me.dir() + "/Sample.ck");
 Machine.add(me.dir() + "/SampleGrains.ck");
 Machine.add(me.dir() + "/RideData.ck");
+Machine.add(me.dir() + "/ShiftingFMWave.ck");
+Machine.add(me.dir() + "/MinMaxSTK.ck");

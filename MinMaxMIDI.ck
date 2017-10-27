@@ -341,58 +341,14 @@ fun void play(Flute instrument[], int voices[]) {
         Math.random2(2, 8) => int numNotes;
                 
         for (0 => int i; i < numNotes; i++) {
-            // occasionally perform a trill halfway through passage
-            if (i == numNotes / 2 && Math.random2f(0.0, 1.0) > 0.6) {
-                trill(instrument[which]);
-            }
             Std.mtof(Math.random2(72, 96)) => instrument[which].freq;
             
             1 => instrument[which].noteOn;
             durations[Math.random2(0, durations.size()-1)]::ms => now;
             1 => instrument[which].noteOff;    
         }
-        
-        // occasionally end w/ a trill
-        if (Math.random2f(0.0, 1.0) > 0.66) {
-            trillFade(instrument[which]);
-        }
-
         0 => voices[which];   
     }
-}
-
-fun void trill(Flute instrument) {
-    Math.random2(72, 96) => int note;
-    Math.random2(1, 5) => int interval;
-    
-    for (0 => int i; i < 5; i++) {
-        if (i % 2 == 0) {
-            Std.mtof(note) => instrument.freq;
-        }
-        else {
-            Std.mtof(note + interval) => instrument.freq;
-        }
-        1 => instrument.noteOn;
-        durations[0]::ms => now;
-    }
-}
-
-fun void trillFade(Flute instrument) {
-    Math.random2(72, 96) => int note;
-    Math.random2(1, 5) => int interval;
-    
-    for (0 => int i; i < 13; i++) {
-        if (i % 2 == 0) {
-            Std.mtof(note) => instrument.freq;
-        }
-        else {
-            Std.mtof(note + interval) => instrument.freq;
-        }
-        instrument.gain() * 0.9 => instrument.gain;
-        1 => instrument.noteOn;
-        durations[0]::ms => now;
-    }
-    1 => instrument.noteOff;
 }
 
 fun void play(ModalBar instrument[], int voices[]) {
