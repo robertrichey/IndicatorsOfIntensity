@@ -204,7 +204,7 @@ for (1 => int i; i < numberOfSamples; i++) {
     if (samples[i].power.current == 0) {
         <<< i, "power = 0" >>>;
         
-        spork ~ play(buff, i, lastDrum);
+        spork ~ play(buff, buffVoices, i, lastDrum);
         i => lastDrum;
     }
     else {
