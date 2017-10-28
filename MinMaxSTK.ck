@@ -119,46 +119,44 @@ for (1 => int i; i < numberOfSamples; i++) {
 
 //---------- PATCH ----------//
 
-1 => int numBuffVoices;
-1 => int numBarVoices;
-1 => int numFluteVoices;
+1 => int soloVoice;
 3 => int numPianoVoices;
 5 => int numSineVoices;
-1 => int numMandolinVoices;
 
-int buffVoices[numBuffVoices];
+int buffVoices[soloVoice];
 int pianoVoices[numPianoVoices];
 int sineVoices[numSineVoices];
-int mandolinVoices[numMandolinVoices];
-int fluteVoices[numFluteVoices];
-int barVoices[numBarVoices];
+int mandolinVoices[soloVoice];
+int fluteVoices[soloVoice];
+int barVoices[soloVoice];
 
 
-SndBuf buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
-ModalBar bars[numBarVoices];
-Flute flute[numFluteVoices];
+SndBuf buff[soloVoice]; // filter, multiple sounds, keep track of duration between drums
+ModalBar bars[soloVoice];
+Flute flute[soloVoice];
 Wurley piano[numPianoVoices];
 SinOsc sine[numSineVoices];
-Mandolin mandolin[numMandolinVoices]; // expand on playing algos
+Mandolin mandolin[soloVoice]; // expand on playing algos
 Mandolin mandolinChord[3]; // for playing a chord
 
 Envelope env[numSineVoices]; // for sine waves
 NRev rev;
 
-makePatch(buff, numBuffVoices, rev);
-makePatch(bars, numBarVoices, rev);
-makePatch(piano, numPianoVoices, rev);
-makePatch(flute, numFluteVoices, rev);
-makePatch(sine, env, numSineVoices, rev);
-makePatch(mandolin, numMandolinVoices, rev);
+// Connect UGens to rev
+makePatch(buff, rev);
+makePatch(bars, rev);
+makePatch(piano, rev);
+makePatch(flute, rev);
+makePatch(sine, env, rev);
+makePatch(mandolin, rev);
 makePatch(mandolinChord, rev);
-
 
 rev => dac;
 
+
 // TODO: where to set?
 me.dir() + "bass_drum.wav" => buff[0].read;
-//buff[0].samples() => buff[0].pos;
+buff[0].samples() => buff[0].pos;
 
 // TODO: bad use of global, bool?
 0 => int lastDrum;
@@ -178,7 +176,7 @@ spork ~ wave.play();
 
 for (1 => int i; i < numberOfSamples; i++) {
     if (samples[i].power.max > samples[i-1].power.max) {
-        setGain(bars, numBarVoices, Math.random2f(0.4, 0.8));
+        setGain(bars, Math.random2f(0.4, 0.8));
         spork ~ play(bars, barVoices);
         <<< i, "power max" >>>;
     }
@@ -187,26 +185,26 @@ for (1 => int i; i < numberOfSamples; i++) {
         <<< i, "speed max" >>>;
     }
     if (samples[i].heartRate.max > samples[i-1].heartRate.max) {
-        setGain(piano, numPianoVoices, Math.random2f(0.3, 0.6));
+        setGain(piano, Math.random2f(0.3, 0.6));
         spork ~ play(piano, pianoVoices);
         spork ~ play(piano, pianoVoices);
         spork ~ play(piano, pianoVoices);
         <<< i, "hr max" >>>;
     }
     if (samples[i].cadence.max > samples[i-1].cadence.max) {
-        setGain(flute, numFluteVoices, Math.random2f(0.1, 0.2));
+        setGain(flute, Math.random2f(0.1, 0.2));
         spork ~ play(flute, fluteVoices);
         <<< i, "cadence max" >>>;
     }
     if (samples[i].cadence.current == 0) {
-        setGain(mandolin, numMandolinVoices, Math.random2f(0.2, 0.5));
+        setGain(mandolin, Math.random2f(0.2, 0.5));
         spork ~ play(mandolin, mandolinVoices);
         <<< i, "cadence = 0" >>>;
     }
     if (samples[i].power.current == 0) {
         <<< i, "power = 0" >>>;
         
-        spork ~ play(buff, buffVoices, i, lastDrum);
+        spork ~ play(buff, i, lastDrum);
         i => lastDrum;
     }
     else {
@@ -222,41 +220,35 @@ for (1 => int i; i < numberOfSamples; i++) {
 //--------functions----------//
 
 
-fun void makePatch(SndBuf instrument[], int numVoices, NRev rev) {
-    for (0 => int i; i < numVoices; i++) {
+fun void makePatch(SndBuf instrument[], NRev rev) {
+    for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => rev;
     }
 }
 
-fun void makePatch(ModalBar instrument[], int numVoices, NRev rev) {
-    for (0 => int i; i < numVoices; i++) {
+fun void makePatch(ModalBar instrument[], NRev rev) {
+    for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => rev;
         0 => instrument[i].preset;
     }
 }
 
-fun void makePatch(Wurley instrument[], int numVoices, NRev rev) {
-    for (0 => int i; i < numVoices; i++) {
+fun void makePatch(Wurley instrument[], NRev rev) {
+    for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => rev;
     }
 }
 
-fun void makePatch(Flute instrument[], int numVoices, NRev rev) {
-    for (0 => int i; i < numVoices; i++) {
+fun void makePatch(Flute instrument[], NRev rev) {
+    for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => rev;
     }
 }
 
-fun void makePatch(SinOsc instrument[], Envelope env[], int numVoices, NRev rev) {
-    for (0 => int i; i < numVoices; i++) {
+fun void makePatch(SinOsc instrument[], Envelope env[], NRev rev) {
+    for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => env[i] => rev;
         2500::ms => env[i].duration;
-    }
-}
-
-fun void makePatch(Mandolin instrument[], int numVoices, NRev rev) {
-    for (0 => int i; i < numVoices; i++) {
-        instrument[i] => rev;
     }
 }
 
@@ -265,6 +257,7 @@ fun void makePatch(Mandolin instrument[], NRev rev) {
         instrument[i] => rev;
     }
 }
+
 
 fun void play(SndBuf instrument[], int voices[], int i, int lastDrum) {
     getVoice(voices) => int which;
@@ -444,14 +437,8 @@ fun void play(SinOsc instrument[], Envelope env[], int voices[]) {
     }
 }
 
-fun void setGain(Wurley instrument[], int voices, float gain) {
-    for (0 => int i; i < voices; i++) {
-        gain => instrument[i].gain;
-    }
-}
-
-fun void setGain(Mandolin instrument[], int voices, float gain) {
-    for (0 => int i; i < voices; i++) {
+fun void setGain(Wurley instrument[], float gain) {
+    for (0 => int i; i < instrument.size(); i++) {
         gain => instrument[i].gain;
     }
 }
@@ -462,14 +449,14 @@ fun void setGain(Mandolin instrument[], float gain) {
     }
 }
 
-fun void setGain(ModalBar instrument[], int voices, float gain) {
-    for (0 => int i; i < voices; i++) {
+fun void setGain(ModalBar instrument[], float gain) {
+    for (0 => int i; i < instrument.size(); i++) {
         gain => instrument[i].gain;
     }
 }
 
-fun void setGain(Flute instrument[], int voices, float gain) {
-    for (0 => int i; i < voices; i++) {
+fun void setGain(Flute instrument[], float gain) {
+    for (0 => int i; i < instrument.size(); i++) {
         gain => instrument[i].gain;
     }
 }
