@@ -117,27 +117,8 @@ for (1 => int i; i < numberOfSamples; i++) {
 <<< "Done" >>>;
 
 
-//---------- PATCH ----------//
-
-5 => int numSineVoices;
-int sineVoices[numSineVoices];
-3 => int numBuffVoices;
-int buffVoices[numBuffVoices];
-
-SndBuf buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
-SinOsc sine[numSineVoices];
-Envelope env[numSineVoices]; // for sine waves
-NRev rev;
-
-// Connect UGens to rev
-makePatch(buff, rev);
-makePatch(sine, env, rev);
-rev => dac;
-
-
 //----------- MIDI Setup -----------//
 
-// TODO: store ports in an array?
 
 MidiOut marimbaOut;
 0 => int port0;
@@ -159,7 +140,7 @@ MidiOut guitarOut1;
 2 => int port2;
 
 if (!guitarOut1.open(port2)) {
-    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    <<< "Error: MIDI port did not open on port: ", port2 >>>;
     me.exit();
 }
 
@@ -167,7 +148,7 @@ MidiOut guitarOut2;
 3 => int port3;
 
 if (!guitarOut2.open(port3)) {
-    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    <<< "Error: MIDI port did not open on port: ", port3 >>>;
     me.exit();
 }
 
@@ -175,7 +156,7 @@ MidiOut guitarOut3;
 4 => int port4;
 
 if (!guitarOut3.open(port4)) {
-    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    <<< "Error: MIDI port did not open on port: ", port4 >>>;
     me.exit();
 }
 
@@ -183,7 +164,7 @@ MidiOut pianoOut1;
 5 => int port5;
 
 if (!pianoOut1.open(port5)) {
-    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    <<< "Error: MIDI port did not open on port: ", port5 >>>;
     me.exit();
 }
 
@@ -191,7 +172,7 @@ MidiOut pianoOut2;
 6 => int port6;
 
 if (!pianoOut2.open(port6)) {
-    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    <<< "Error: MIDI port did not open on port: ", port6 >>>;
     me.exit();
 }
 
@@ -199,38 +180,59 @@ MidiOut pianoOut3;
 7 => int port7;
 
 if (!pianoOut3.open(port7)) {
-    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    <<< "Error: MIDI port did not open on port: ", port7 >>>;
     me.exit();
 }
 
-// ------ end MIDI --------
 
-// Bools for checkking if an instrument is playing
+//---------- PATCH ----------//
+
+5 => int numSineVoices;
+int sineVoices[numSineVoices];
+3 => int numBuffVoices;
+int buffVoices[numBuffVoices];
+
+SndBuf buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
+SinOsc sine[numSineVoices];
+Envelope env[numSineVoices]; // for sine waves
+NRev rev;
+
+0.1 => rev.mix;
+
+
+// Connect UGens to rev
+makePatch(buff, rev);
+makePatch(sine, env, rev);
+rev => dac;
+
+
+// Bools for checking if an instrument is playing
 1 => int drumIsOff;
 1 => int pianoIsOff;
 1 => int marimbaIsOff;
 1 => int fluteIsOff;
 1 => int guitarIsOff;
 
-
-
-// TODO: bad use of global, bool?
+// TODO: bad use of global?
 0 => int lastDrum;
 
+
+// Set length of piece
 900000 => float totalDuration;
 totalDuration / numberOfSamples => float sampleRate;
+<<< sampleRate >>>;
 
-0.1 => rev.mix;
-
-// launch FM wave in background
-ShiftingFMWave wave;
-spork ~ wave.play();
 
 // TODO: how to handle global array? better as dur rather than int?
 [100, 200, 400, 800] @=> int durations[];
 
 
-// MAIN LOOP
+// launch FM wave in background
+ShiftingFMWave wave;
+spork ~ wave.play();
+
+
+//----------- MAIN LOOP -----------//
 
 for (1 => int i; i < numberOfSamples; i++) {
     if (samples[i].power.max > samples[i-1].power.max && marimbaIsOff) {
@@ -290,7 +292,6 @@ fun void makePatch(SinOsc instrument[], Envelope env[], NRev rev) {
     }
 }
 
-
 fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
     0 => drumIsOff;
     
@@ -303,7 +304,7 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
             if (Math.random2f(0.0, 1.0) > 0.33) {
                 rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
                 0 => buff[which].pos;
-                Math.random2f(durations[1], durations[durations.size()-1])::ms => now;
+                Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
             }
         }
         0 => voices[which]; 
@@ -314,8 +315,8 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
         rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
         0 => buff[which].pos;
         
-        // fade fm wave in and out
-        if (wave.isOff && i - lastDrum > 20 && Math.random2f(0.0, 1.0) > 0.45) {
+        // fade fm wave in and out, 45% chance to play
+        if (wave.isOff && i - lastDrum > 10 && Math.random2f(0.0, 1.0) > -0.45) {
             wave.turnOn(i, lastDrum, sampleRate);
         }
     }
