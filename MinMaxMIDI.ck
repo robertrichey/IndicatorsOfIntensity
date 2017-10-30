@@ -120,39 +120,26 @@ for (1 => int i; i < numberOfSamples; i++) {
 //---------- PATCH ----------//
 
 1 => int soloVoice;
-3 => int numPianoVoices;
 5 => int numSineVoices;
 
 int buffVoices[soloVoice];
-int pianoVoices[numPianoVoices];
 int sineVoices[numSineVoices];
 int mandolinVoices[soloVoice];
-int fluteVoices[soloVoice];
-int barVoices[soloVoice];
 
 
 SndBuf buff[soloVoice]; // filter, multiple sounds, keep track of duration between drums
-ModalBar bars[soloVoice];
-Flute flute[soloVoice];
-Wurley piano[numPianoVoices];
 SinOsc sine[numSineVoices];
-Mandolin mandolin[soloVoice]; // expand on playing algos
-Mandolin mandolinChord[3]; // for playing a chord
-
 Envelope env[numSineVoices]; // for sine waves
 NRev rev;
 
 // Connect UGens to rev
 makePatch(buff, rev);
-makePatch(bars, rev);
-makePatch(piano, rev);
-makePatch(flute, rev);
 makePatch(sine, env, rev);
-makePatch(mandolin, rev);
-makePatch(mandolinChord, rev);
-
 rev => dac;
 
+//----------- MIDI Setup -----------//
+
+// TODO: store ports in an array?
 
 MidiOut marimbaOut;
 
@@ -174,7 +161,73 @@ if (!fluteOut.open(port1)) {
     me.exit();
 }
 
+MidiOut guitarOut1;
 
+// MIDI Port
+2 => int port2;
+
+if (!guitarOut1.open(port2)) {
+    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    me.exit();
+}
+
+MidiOut guitarOut2;
+
+// MIDI Port
+3 => int port3;
+
+if (!guitarOut2.open(port3)) {
+    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    me.exit();
+}
+
+MidiOut guitarOut3;
+
+// MIDI Port
+4 => int port4;
+
+if (!guitarOut3.open(port4)) {
+    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    me.exit();
+}
+
+MidiOut pianoOut1;
+
+// MIDI Port
+5 => int port5;
+
+if (!pianoOut1.open(port5)) {
+    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    me.exit();
+}
+
+MidiOut pianoOut2;
+
+// MIDI Port
+6 => int port6;
+
+if (!pianoOut2.open(port6)) {
+    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    me.exit();
+}
+
+MidiOut pianoOut3;
+
+// MIDI Port
+7 => int port7;
+
+if (!pianoOut3.open(port7)) {
+    <<< "Error: MIDI port did not open on port: ", port1 >>>;
+    me.exit();
+}
+
+// ------ end MIDI --------
+
+// Bools for checkking if an instrument is playing
+1 => int pianoIsOff;
+1 => int marimbaIsOff;
+1 => int fluteIsOff;
+1 => int guitarIsOff;
 
 // TODO: where to set?
 me.dir() + "bass_drum.wav" => buff[0].read;
@@ -196,31 +249,27 @@ spork ~ wave.play();
 [100, 200, 400, 800] @=> int durations[];
 
 
+// MAIN LOOP
+
 for (1 => int i; i < numberOfSamples; i++) {
-    if (samples[i].power.max > samples[i-1].power.max) {
-        setGain(bars, Math.random2f(0.4, 0.8));
-        spork ~ play(bars, barVoices);
+    if (samples[i].power.max > samples[i-1].power.max && marimbaIsOff) {
+        spork ~ playMarimba();
         <<< i, "power max" >>>;
     }
     if (samples[i].speed.max > samples[i-1].speed.max) {
         spork ~ play(sine, env, sineVoices);
         <<< i, "speed max" >>>;
     }
-    if (samples[i].heartRate.max > samples[i-1].heartRate.max) {
-        setGain(piano, Math.random2f(0.3, 0.6));
-        spork ~ play(piano, pianoVoices);
-        spork ~ play(piano, pianoVoices);
-        spork ~ play(piano, pianoVoices);
+    if (samples[i].heartRate.max > samples[i-1].heartRate.max && pianoIsOff) {
+        spork ~ playPiano();
         <<< i, "hr max" >>>;
     }
-    if (samples[i].cadence.max > samples[i-1].cadence.max) {
-        setGain(flute, Math.random2f(0.1, 0.2));
-        spork ~ play(flute, fluteVoices);
+    if (samples[i].cadence.max > samples[i-1].cadence.max && fluteIsOff) {
+        spork ~ playFlute();
         <<< i, "cadence max" >>>;
     }
-    if (samples[i].cadence.current == 0) {
-        setGain(mandolin, Math.random2f(0.2, 0.5));
-        spork ~ play(mandolin, mandolinVoices);
+    if (samples[i].cadence.current == 0 && guitarIsOff) {
+        spork ~ playGuitar();
         <<< i, "cadence = 0" >>>;
     }
     if (samples[i].power.current == 0) {
@@ -238,6 +287,8 @@ for (1 => int i; i < numberOfSamples; i++) {
 // Let sounds fade
 10::second => now;
 
+// END MAIN
+
 
 //--------functions----------//
 
@@ -248,35 +299,10 @@ fun void makePatch(SndBuf instrument[], NRev rev) {
     }
 }
 
-fun void makePatch(ModalBar instrument[], NRev rev) {
-    for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => rev;
-        0 => instrument[i].preset;
-    }
-}
-
-fun void makePatch(Wurley instrument[], NRev rev) {
-    for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => rev;
-    }
-}
-
-fun void makePatch(Flute instrument[], NRev rev) {
-    for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => rev;
-    }
-}
-
 fun void makePatch(SinOsc instrument[], Envelope env[], NRev rev) {
     for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => env[i] => rev;
         2500::ms => env[i].duration;
-    }
-}
-
-fun void makePatch(Mandolin instrument[], NRev rev) {
-    for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => rev;
     }
 }
 
@@ -298,170 +324,10 @@ fun void play(SndBuf instrument[], int voices[], int i, int lastDrum) {
         0 => instrument[which].pos;
         
         // fade fm wave in and out
-        if (wave.isOff && i - lastDrum > 20 && Math.random2f(0.0, 1.0) > 0.45) { // 55 * 90 ~= 5000 ms 
-            //<<< i, "-", lastDrum, "=", i - lastDrum,
-            //"(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
+        if (wave.isOff && i - lastDrum > 20 && Math.random2f(0.0, 1.0) > 0.45) {
             wave.turnOn(i, lastDrum, sampleRate);
-            //<<< wave.isOff >>>;
         }
         0 => voices[which];
-    }
-}
-
-fun void play(Mandolin instrument[], int voices[]) {
-    getVoice(voices) => int which;
-    
-    if (which > -1) {
-        
-        Std.mtof(Math.random2(55, 91)) => instrument[which].freq;
-        
-        1 => instrument[which].pluck;
-        durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
-        
-        Math.random2(10, 20) => int numNotes;
-        instrument[which].gain() * 0.6 => float gain => instrument[which].gain;
-        
-        for (0 => int i; i < numNotes; i++) {
-            1 => instrument[which].pluck;
-            75::ms => now;    
-            1.08 *=> gain => instrument[which].gain;
-        }
-        durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
-        
-        if (Math.random2f(0.0, 1.0) > 0.5) {
-            setGain(mandolinChord, 
-                Math.random2f(instrument[which].gain() - 0.2, instrument[which].gain()));   
-            play(mandolinChord);
-        }
-        
-        0 => voices[which]; 
-    }
-}
-
-fun void play(Mandolin instrument[]) {
-    // assign each mandolin its own octave
-    for (0 => int i; i < instrument.size(); i++) {
-        Std.mtof(Math.random2(55 + 12 * i, 55 + 12 * (i + 1))) => mandolinChord[i].freq;
-    }
-    for (0 => int i; i < instrument.size(); i++) {
-        1 => mandolinChord[i].pluck;
-    }
-    durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
-}
-
-// TODO: handle velocity/gain/volume
-fun void play(Flute instrument[], int voices[]) {
-    getVoice(voices) => int which;
-    
-    if (which > -1) {
-        Math.random2(2, 8) => int numNotes;
-        Math.random2(60, 127) => int velocity;
-        
-        for (0 => int i; i < numNotes; i++) {
-            // occasionally perform a trill halfway through passage
-            if (i == numNotes / 2 && Math.random2f(0.0, 1.0) > 0.6) {
-                trill(instrument[which], velocity);
-            }
-            Math.random2(72, 96) => int note;
-            
-            MIDInote(fluteOut, 1, note, velocity);
-            durations[Math.random2(0, durations.size()-1)]::ms => now;
-            MIDInote(fluteOut, 0, note, velocity);
-        }
-        
-        // occasionally end w/ a trill
-        if (Math.random2f(0.0, 1.0) > 0.66) {
-            trillFade(instrument[which], velocity);
-        }
-
-        0 => voices[which];   
-    }
-}
-
-fun void trill(Flute instrument, int velocity) {
-    Math.random2(72, 96) => int note;
-    Math.random2(1, 5) => int interval;
-    
-    for (0 => int i; i < 5; i++) {
-        if (i % 2 == 0) {
-            MIDInote(fluteOut, 1, note, velocity);
-        }
-        else {
-            MIDInote(fluteOut, 1, note + interval, velocity);
-        }
-        durations[0]::ms => now;
-        MIDInote(fluteOut, 0, note, velocity);
-        MIDInote(fluteOut, 0, note + interval, velocity);
-    }
-}
-
-fun void trillFade(Flute instrument, int velocity) {
-    Math.random2(72, 96) => int note;
-    Math.random2(1, 5) => int interval;
-    
-    for (0 => int i; i < 13; i++) {
-        if (i % 2 == 0) {
-            MIDInote(fluteOut, 1, note, velocity);
-        }
-        else {
-            MIDInote(fluteOut, 1, note + interval, velocity);
-        }
-        durations[0]::ms => now;
-                
-        MIDInote(fluteOut, 0, note, velocity);
-        MIDInote(fluteOut, 0, note + interval, velocity);
-        5 -=> velocity;
-    }
-}
-
-
-// utility function to send MIDI out notes
-fun void MIDInote(MidiOut mout, int onOff, int note, int velocity) {
-    MidiMsg msg;
-    
-    if(onOff == 0) {
-        128 => msg.data1;
-    }
-    else {
-        144 => msg.data1;
-    } 
-    note => msg.data2;
-    velocity => msg.data3; 
-    mout.send(msg);
-}
-
-fun void play(ModalBar instrument[], int voices[]) {
-    getVoice(voices) => int which;
-    
-    if (which > -1) {
-        Math.random2(2, 8) => int numNotes;
-        Math.random2(60, 127) => int velocity;
-        
-        for (0 => int i; i < numNotes; i++) {
-            Math.random2(36, 72) => int note; 
-            MIDInote(marimbaOut, 1, note, velocity); 
-            durations[Math.random2(0, durations.size()-1)]::ms => now;
-        }
-        Math.random2(36, 72) => int note; 
-        for (0 => int i; i < Math.random2(5, 20); i++) {            
-            MIDInote(marimbaOut, 1, note, velocity); 
-            100::ms => now;
-        }
-        MIDInote(marimbaOut, 0, note, velocity); 
-
-        0 => voices[which];   
-    }
-}
-
-fun void play(Wurley instrument[], int voices[]) {
-    getVoice(voices) => int which;
-    
-    if (which > -1) {
-        Std.mtof(Math.random2(43, 55)) => instrument[which].freq;
-        1 => instrument[which].noteOn;
-        4000::ms => now;    
-        1 => instrument[which].noteOff;
-        0 => voices[which];   
     }
 }
 
@@ -481,28 +347,172 @@ fun void play(SinOsc instrument[], Envelope env[], int voices[]) {
     }
 }
 
-fun void setGain(Wurley instrument[], float gain) {
-    for (0 => int i; i < instrument.size(); i++) {
-        gain => instrument[i].gain;
+fun void playGuitar() {
+    0 => guitarIsOff;
+    
+    Math.random2(55, 91) => int note;
+    Math.random2(60, 80) => int velocity;
+    
+    MIDInote(guitarOut1, 1, note, velocity);
+    durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
+    
+    Math.random2(10, 20) => int numNotes;
+    Std.ftoi(velocity * 0.6) => velocity;
+    
+    for (0 => int i; i < numNotes; i++) {
+        MIDInote(guitarOut1, 1, note, velocity);
+        75::ms => now;    
+        Std.ftoi(velocity * 1.08) => velocity;
+    }
+    durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
+    MIDInote(guitarOut1, 0, note, velocity);
+    
+    if (Math.random2f(0.0, 1.0) > 0.5) {   
+        playGuitarChord();
+    }
+    
+    1 => guitarIsOff;
+}
+
+fun void playGuitarChord() {
+    // assign each note its own octave
+    Math.random2(55, 67) => int note1;
+    Math.random2(67, 79) => int note2;
+    Math.random2(79, 91) => int note3;
+    
+    Math.random2(80, 100) => int velocity;
+    
+    MIDInote(guitarOut1, 1, note1, velocity);
+    MIDInote(guitarOut2, 1, note2, velocity);
+    MIDInote(guitarOut3, 1, note3, velocity);
+    
+    durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
+    
+    MIDInote(guitarOut1, 0, note1, velocity);
+    MIDInote(guitarOut2, 0, note2, velocity);
+    MIDInote(guitarOut3, 0, note3, velocity);
+}
+
+// TODO: handle velocity/gain/volume
+fun void playFlute() {
+    0 => fluteIsOff;  
+    
+    Math.random2(2, 8) => int numNotes;
+    Math.random2(60, 127) => int velocity;
+    
+    for (0 => int i; i < numNotes; i++) {
+        // occasionally perform a trill halfway through passage
+        if (i == numNotes / 2 && Math.random2f(0.0, 1.0) > 0.6) {
+            trill(velocity);
+        }
+        Math.random2(72, 96) => int note;
+        
+        MIDInote(fluteOut, 1, note, velocity);
+        durations[Math.random2(0, durations.size()-1)]::ms => now;
+        MIDInote(fluteOut, 0, note, velocity);
+    }
+    
+    // occasionally end w/ a trill
+    if (Math.random2f(0.0, 1.0) > 0.66) {
+        trillFade(velocity);
+    }
+    
+    1 => fluteIsOff;
+}
+
+fun void trill(int velocity) {
+    Math.random2(72, 96) => int note;
+    Math.random2(1, 5) => int interval;
+    
+    for (0 => int i; i < 5; i++) {
+        if (i % 2 == 0) {
+            MIDInote(fluteOut, 1, note, velocity);
+        }
+        else {
+            MIDInote(fluteOut, 1, note + interval, velocity);
+        }
+        durations[0]::ms => now;
+        
+        MIDInote(fluteOut, 0, note, velocity);
+        MIDInote(fluteOut, 0, note + interval, velocity);
     }
 }
 
-fun void setGain(Mandolin instrument[], float gain) {
-    for (0 => int i; i < instrument.size(); i++) {
-        gain => instrument[i].gain;
+fun void trillFade(int velocity) {
+    Math.random2(72, 96) => int note;
+    Math.random2(1, 5) => int interval;
+    
+    for (0 => int i; i < 13; i++) {
+        if (i % 2 == 0) {
+            MIDInote(fluteOut, 1, note, velocity);
+        }
+        else {
+            MIDInote(fluteOut, 1, note + interval, velocity);
+        }
+        durations[0]::ms => now;
+                
+        MIDInote(fluteOut, 0, note, velocity);
+        MIDInote(fluteOut, 0, note + interval, velocity);
+        5 -=> velocity; // TODO: doesn't work - how to affect volume?
     }
 }
 
-fun void setGain(ModalBar instrument[], float gain) {
-    for (0 => int i; i < instrument.size(); i++) {
-        gain => instrument[i].gain;
+fun void playMarimba() {
+    0 => marimbaIsOff;
+    
+    Math.random2(2, 8) => int numNotes;
+    Math.random2(60, 127) => int velocity;
+    
+    for (0 => int i; i < numNotes; i++) {
+        Math.random2(36, 72) => int note; 
+        MIDInote(marimbaOut, 1, note, velocity); 
+        durations[Math.random2(0, durations.size()-1)]::ms => now;
     }
+    Math.random2(36, 72) => int note; 
+    for (0 => int i; i < Math.random2(5, 20); i++) {            
+        MIDInote(marimbaOut, 1, note, velocity); 
+        100::ms => now;
+    }
+    MIDInote(marimbaOut, 0, note, velocity); 
+    
+    1 => marimbaIsOff;  
 }
 
-fun void setGain(Flute instrument[], float gain) {
-    for (0 => int i; i < instrument.size(); i++) {
-        gain => instrument[i].gain;
+fun void playPiano() {   
+    0 => pianoIsOff;
+    
+    Math.random2(48, 55) => int note1;
+    Math.random2(48, 55) => int note2;
+    Math.random2(48, 55) => int note3;
+    
+    Math.random2(80, 100) => int velocity;
+    
+    MIDInote(pianoOut1, 1, note1, velocity);
+    MIDInote(pianoOut2, 1, note2, velocity);
+    MIDInote(pianoOut3, 1, note3, velocity);
+    
+    4000::ms => now; // TODO: elaborate on duration?
+    
+    MIDInote(pianoOut1, 0, note1, velocity);
+    MIDInote(pianoOut2, 0, note2, velocity);
+    MIDInote(pianoOut3, 0, note3, velocity);
+    
+    1 => pianoIsOff;
+}
+
+// utility function to send MIDI out notes
+fun void MIDInote(MidiOut mout, int onOff, int note, int velocity) {
+    MidiMsg msg;
+    
+    if(onOff == 0) {
+        128 => msg.data1;
     }
+    else {
+        144 => msg.data1;
+    } 
+    note => msg.data2;
+    velocity => msg.data3; 
+    mout.send(msg);
 }
 
 fun int getVoice(int voices[]) {

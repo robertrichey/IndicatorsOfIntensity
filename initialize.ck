@@ -9,7 +9,7 @@ Machine.add(me.dir() + "/RideData.ck");
 Machine.add(me.dir() + "/ShiftingFMWave.ck");
 
 // performance file (~15 minutes)
-Machine.add(me.dir() + "/MinMaxSTK.ck");
+//Machine.add(me.dir() + "/MinMaxSTK.ck");
 
 /*
 chuck midi => ableton => chuck audio(?)
@@ -17,4 +17,5 @@ consult dr cooper about sound quality
 use of filters on ugens
 panning
 different data sets
+Based number of notes/velocity/rhythmic complexity on data?
 */
