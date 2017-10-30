@@ -119,15 +119,12 @@ for (1 => int i; i < numberOfSamples; i++) {
 
 //---------- PATCH ----------//
 
-1 => int soloVoice;
 5 => int numSineVoices;
-
-int buffVoices[soloVoice];
 int sineVoices[numSineVoices];
-int mandolinVoices[soloVoice];
+3 => int numBuffVoices;
+int buffVoices[numBuffVoices];
 
-
-SndBuf buff[soloVoice]; // filter, multiple sounds, keep track of duration between drums
+SndBuf buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
 SinOsc sine[numSineVoices];
 Envelope env[numSineVoices]; // for sine waves
 NRev rev;
@@ -137,13 +134,12 @@ makePatch(buff, rev);
 makePatch(sine, env, rev);
 rev => dac;
 
+
 //----------- MIDI Setup -----------//
 
 // TODO: store ports in an array?
 
 MidiOut marimbaOut;
-
-// MIDI Port
 0 => int port0;
 
 if (!marimbaOut.open(port0)) {
@@ -152,8 +148,6 @@ if (!marimbaOut.open(port0)) {
 }
 
 MidiOut fluteOut;
-
-// MIDI Port
 1 => int port1;
 
 if (!fluteOut.open(port1)) {
@@ -162,8 +156,6 @@ if (!fluteOut.open(port1)) {
 }
 
 MidiOut guitarOut1;
-
-// MIDI Port
 2 => int port2;
 
 if (!guitarOut1.open(port2)) {
@@ -172,8 +164,6 @@ if (!guitarOut1.open(port2)) {
 }
 
 MidiOut guitarOut2;
-
-// MIDI Port
 3 => int port3;
 
 if (!guitarOut2.open(port3)) {
@@ -182,8 +172,6 @@ if (!guitarOut2.open(port3)) {
 }
 
 MidiOut guitarOut3;
-
-// MIDI Port
 4 => int port4;
 
 if (!guitarOut3.open(port4)) {
@@ -192,8 +180,6 @@ if (!guitarOut3.open(port4)) {
 }
 
 MidiOut pianoOut1;
-
-// MIDI Port
 5 => int port5;
 
 if (!pianoOut1.open(port5)) {
@@ -202,8 +188,6 @@ if (!pianoOut1.open(port5)) {
 }
 
 MidiOut pianoOut2;
-
-// MIDI Port
 6 => int port6;
 
 if (!pianoOut2.open(port6)) {
@@ -212,8 +196,6 @@ if (!pianoOut2.open(port6)) {
 }
 
 MidiOut pianoOut3;
-
-// MIDI Port
 7 => int port7;
 
 if (!pianoOut3.open(port7)) {
@@ -224,14 +206,13 @@ if (!pianoOut3.open(port7)) {
 // ------ end MIDI --------
 
 // Bools for checkking if an instrument is playing
+1 => int drumIsOff;
 1 => int pianoIsOff;
 1 => int marimbaIsOff;
 1 => int fluteIsOff;
 1 => int guitarIsOff;
 
-// TODO: where to set?
-me.dir() + "bass_drum.wav" => buff[0].read;
-buff[0].samples() => buff[0].pos;
+
 
 // TODO: bad use of global, bool?
 0 => int lastDrum;
@@ -257,7 +238,7 @@ for (1 => int i; i < numberOfSamples; i++) {
         <<< i, "power max" >>>;
     }
     if (samples[i].speed.max > samples[i-1].speed.max) {
-        spork ~ play(sine, env, sineVoices);
+        spork ~ playSine(sine, env, sineVoices);
         <<< i, "speed max" >>>;
     }
     if (samples[i].heartRate.max > samples[i-1].heartRate.max && pianoIsOff) {
@@ -272,10 +253,9 @@ for (1 => int i; i < numberOfSamples; i++) {
         spork ~ playGuitar();
         <<< i, "cadence = 0" >>>;
     }
-    if (samples[i].power.current == 0) {
+    if (samples[i].power.current == 0 && drumIsOff) {
         <<< i, "power = 0" >>>;
-        
-        spork ~ play(buff, buffVoices, i, lastDrum);
+        spork ~ playDrum(buff, buffVoices, i, lastDrum);
         i => lastDrum;
     }
     else {
@@ -293,9 +273,13 @@ for (1 => int i; i < numberOfSamples; i++) {
 //--------functions----------//
 
 
-fun void makePatch(SndBuf instrument[], NRev rev) {
+// TODO: Document
+fun void makePatch(SndBuf instrument[], NRev rev) {    
     for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => rev;
+        me.dir() + "bass_drum.wav" => buff[i].read;
+        buff[i].samples() => buff[i].pos;
+        4.0 => buff[i].gain;
     }
 }
 
@@ -307,36 +291,45 @@ fun void makePatch(SinOsc instrument[], Envelope env[], NRev rev) {
 }
 
 
-fun void play(SndBuf instrument[], int voices[], int i, int lastDrum) {
-    getVoice(voices) => int which;
+fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
+    0 => drumIsOff;
     
-    if (which > -1) {
-        [0.5, 1.0, 2.0] @=> float rates[];
+    [0.5, 1.0, 2.0] @=> float rates[];
+    
+    for (0 => int i; i < 2; i++) {
+        getVoice(voices) => int which;
         
-        for (0 => int i; i < 2; i++) {
+        if (which > -1) {
             if (Math.random2f(0.0, 1.0) > 0.33) {
-                rates[Math.random2(0, rates.size()-1)] => instrument[which].rate;
-                0 => instrument[which].pos;
+                rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
+                0 => buff[which].pos;
                 Math.random2f(durations[1], durations[durations.size()-1])::ms => now;
             }
         }
-        rates[Math.random2(0, rates.size()-1)] => instrument[which].rate;
-        0 => instrument[which].pos;
+        0 => voices[which]; 
+    }
+    getVoice(voices) => int which;
+    
+    if (which > -1) {
+        rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
+        0 => buff[which].pos;
         
         // fade fm wave in and out
         if (wave.isOff && i - lastDrum > 20 && Math.random2f(0.0, 1.0) > 0.45) {
             wave.turnOn(i, lastDrum, sampleRate);
         }
-        0 => voices[which];
     }
+    0 => voices[which]; 
+    
+    1 => drumIsOff;
 }
 
-fun void play(SinOsc instrument[], Envelope env[], int voices[]) {
+fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
         Math.random2(440, 880) => instrument[which].freq;
-        Math.random2f(0.1, 0.3) => instrument[which].gain;
+        Math.random2f(0.2, 0.6) => instrument[which].gain;
         
         1 => env[which].keyOn;
         env[which].duration() => now;    
@@ -355,13 +348,16 @@ fun void playGuitar() {
     
     MIDInote(guitarOut1, 1, note, velocity);
     durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
+    MIDInote(guitarOut1, 0, note, velocity);
     
     Math.random2(10, 20) => int numNotes;
     Std.ftoi(velocity * 0.6) => velocity;
     
     for (0 => int i; i < numNotes; i++) {
         MIDInote(guitarOut1, 1, note, velocity);
-        75::ms => now;    
+        75::ms => now; 
+        MIDInote(guitarOut1, 0, note, velocity);
+           
         Std.ftoi(velocity * 1.08) => velocity;
     }
     durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
@@ -386,7 +382,7 @@ fun void playGuitarChord() {
     MIDInote(guitarOut2, 1, note2, velocity);
     MIDInote(guitarOut3, 1, note3, velocity);
     
-    durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
+    durations[Math.random2(0, durations.size()-1)] * Math.random2(2, 3)::ms => now;
     
     MIDInote(guitarOut1, 0, note1, velocity);
     MIDInote(guitarOut2, 0, note2, velocity);

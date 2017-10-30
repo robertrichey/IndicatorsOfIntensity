@@ -33,10 +33,10 @@ public class ShiftingFMWave {
             float endModFreq;
             
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.03, 0.05, oscGrains.cadence[i]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i]) => 
             float startCarGain;
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.03, 0.05, oscGrains.cadence[i + 1]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i + 1]) => 
             float endCarGain;
             
             

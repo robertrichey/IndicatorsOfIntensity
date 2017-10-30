@@ -18,4 +18,8 @@ use of filters on ugens
 panning
 different data sets
 Based number of notes/velocity/rhythmic complexity on data?
+Set gain function for FM wave?
+Use array of SndBuf, one for each drum rate
+Adjust FM gain to match MIDI instruments
+Organize code before main in MinMaxMIDI, reorder functions
 */
