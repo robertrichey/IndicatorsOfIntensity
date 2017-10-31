@@ -3,8 +3,8 @@ public class ShiftingFMWave {
     data.getGrains(5) @=> SampleGrains oscGrains;
     
     1 => int isOff;
-    // PATCH
     
+    // PATCH
     SinOsc modulator => TriOsc carrier => Envelope env => NRev rev => dac;
 
     0.1 => rev.mix;
@@ -33,10 +33,10 @@ public class ShiftingFMWave {
             float endModFreq;
             
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.05, 0.1, oscGrains.cadence[i]) => 
             float startCarGain;
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i + 1]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.05, 0.1, oscGrains.cadence[i + 1]) => 
             float endCarGain;
             
             
@@ -57,15 +57,14 @@ public class ShiftingFMWave {
     
     // TODO: document, use isOn bool function
     fun void turnOn(int a, int b, float sampleRate) {
-        //(((a - b) * sampleRate) * 0.2)::ms => now;
+        (a - b) * sampleRate => float ringTime;
         
-        //500::ms => now;
         0 => isOff;
-        (((a - b) * sampleRate) * 0.005)::ms => env.duration;
+        ringTime * 0.005::ms => env.duration;
         env.keyOn();
         env.duration() => now;
         
-        (((a - b) * sampleRate) * 0.995)::ms => env.duration;
+        ringTime * 0.995::ms => env.duration;
         env.keyOff();
         env.duration() => now;
         1 => isOff;

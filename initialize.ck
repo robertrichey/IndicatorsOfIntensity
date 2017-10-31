@@ -9,22 +9,21 @@ Machine.add(me.dir() + "/RideData.ck");
 Machine.add(me.dir() + "/ShiftingFMWave.ck");
 
 // performance file (~15 minutes)
-//Machine.add(me.dir() + "/MinMaxMIDI.ck");
+Machine.add(me.dir() + "/MinMaxMIDI.ck");
 
 /*
 chuck midi => ableton => chuck audio(?)
-consult dr cooper about sound quality
+consult Dr cooper about sound quality in DAW?
 use of filters on ugens
 panning
 different data sets
 Based number of notes/velocity/rhythmic complexity on data?
-Set gain function for FM wave?
+Set gain function for FM wave? base on gain of drums
 Use array of SndBuf, one for each drum rate
-Adjust FM gain to match MIDI instruments
-Organize code before main in MinMaxMIDI, reorder functions
 Improve quality of drum sound
 Control volume of MIDI flute
 Send all audio to ableton, use master reverb
-Check bug in FM wave at end of piece, set wave to play on every hit
-Check math and algo for determining length of FM wave
+Break drum/FM wave method into smaller methods
+Extract ride data from MinMax to seperate class
+Set performance duration in one file (make param in FM class)
 */

@@ -255,9 +255,13 @@ for (1 => int i; i < numberOfSamples; i++) {
         spork ~ playGuitar();
         <<< i, "cadence = 0" >>>;
     }
-    if (samples[i].power.current == 0 && drumIsOff) {
+    if (samples[i].power.current == 0) {
         <<< i, "power = 0" >>>;
-        spork ~ playDrum(buff, buffVoices, i, lastDrum);
+        
+        if (drumIsOff) {
+            spork ~ playDrum(buff, buffVoices, i, lastDrum);
+        }
+        
         i => lastDrum;
     }
     else {
@@ -281,7 +285,6 @@ fun void makePatch(SndBuf instrument[], NRev rev) {
         instrument[i] => rev;
         me.dir() + "bass_drum.wav" => buff[i].read;
         buff[i].samples() => buff[i].pos;
-        4.0 => buff[i].gain;
     }
 }
 
@@ -296,6 +299,7 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
     0 => drumIsOff;
     
     [0.5, 1.0, 2.0] @=> float rates[];
+    setDrumGain(instrument);
     
     for (0 => int i; i < 2; i++) {
         getVoice(voices) => int which;
@@ -316,7 +320,8 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
         0 => buff[which].pos;
         
         // fade fm wave in and out, 45% chance to play
-        if (wave.isOff && i - lastDrum > 10 && Math.random2f(0.0, 1.0) > -0.45) {
+        if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
+            <<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;//, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
             wave.turnOn(i, lastDrum, sampleRate);
         }
     }
@@ -325,12 +330,18 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
     1 => drumIsOff;
 }
 
+fun void setDrumGain(SndBuf buff[]) {
+    for (0 => int i; i < buff.size(); i++) {
+        Math.random2f(0.8, 1.8) => buff[i].gain;
+    }
+}
+
 fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     getVoice(voices) => int which;
     
     if (which > -1) {
         Math.random2(440, 880) => instrument[which].freq;
-        Math.random2f(0.2, 0.6) => instrument[which].gain;
+        Math.random2f(0.1, 0.4) => instrument[which].gain;
         
         1 => env[which].keyOn;
         env[which].duration() => now;    
@@ -458,7 +469,7 @@ fun void playMarimba() {
     0 => marimbaIsOff;
     
     Math.random2(2, 8) => int numNotes;
-    Math.random2(60, 127) => int velocity;
+    Math.random2(80, 127) => int velocity;
     
     for (0 => int i; i < numNotes; i++) {
         Math.random2(36, 72) => int note; 
@@ -482,7 +493,7 @@ fun void playPiano() {
     Math.random2(48, 55) => int note2;
     Math.random2(48, 55) => int note3;
     
-    Math.random2(80, 100) => int velocity;
+    Math.random2(85, 110) => int velocity;
     
     MIDInote(pianoOut1, 1, note1, velocity);
     MIDInote(pianoOut2, 1, note2, velocity);
