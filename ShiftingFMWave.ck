@@ -7,7 +7,7 @@ public class ShiftingFMWave {
     // PATCH
     SinOsc modulator => TriOsc carrier => Envelope env => NRev rev => dac;
 
-    0.1 => rev.mix;
+    0.0 => rev.mix;
     
     // Tell the oscillator to interpret input as frequency modulation
     2 => carrier.sync;
@@ -33,10 +33,10 @@ public class ShiftingFMWave {
             float endModFreq;
             
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.05, 0.1, oscGrains.cadence[i]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i]) => 
             float startCarGain;
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.05, 0.1, oscGrains.cadence[i + 1]) => 
+            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i + 1]) => 
             float endCarGain;
             
             

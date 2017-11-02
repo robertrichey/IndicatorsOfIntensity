@@ -197,7 +197,7 @@ SinOsc sine[numSineVoices];
 Envelope env[numSineVoices]; // for sine waves
 NRev rev;
 
-0.1 => rev.mix;
+0.0 => rev.mix;
 
 
 // Connect UGens to rev
@@ -321,7 +321,7 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
         
         // fade fm wave in and out, 45% chance to play
         if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
-            <<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;//, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
+            //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;//, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
             wave.turnOn(i, lastDrum, sampleRate);
         }
     }
@@ -332,7 +332,7 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
 
 fun void setDrumGain(SndBuf buff[]) {
     for (0 => int i; i < buff.size(); i++) {
-        Math.random2f(0.8, 1.8) => buff[i].gain;
+        Math.random2f(2.0, 3.0) => buff[i].gain;
     }
 }
 
@@ -341,7 +341,7 @@ fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     
     if (which > -1) {
         Math.random2(440, 880) => instrument[which].freq;
-        Math.random2f(0.1, 0.4) => instrument[which].gain;
+        Math.random2f(0.2, 0.4) => instrument[which].gain;
         
         1 => env[which].keyOn;
         env[which].duration() => now;    
@@ -375,7 +375,7 @@ fun void playGuitar() {
     durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
     MIDInote(guitarOut1, 0, note, velocity);
     
-    if (Math.random2f(0.0, 1.0) > 0.5) {   
+    if (Math.random2f(0.0, 1.0) > 0.45) {   
         playGuitarChord();
     }
     
@@ -475,12 +475,15 @@ fun void playMarimba() {
         Math.random2(36, 72) => int note; 
         MIDInote(marimbaOut, 1, note, velocity); 
         durations[Math.random2(0, durations.size()-1)]::ms => now;
+        MIDInote(marimbaOut, 0, note, velocity); 
+        
     }
     Math.random2(36, 72) => int note; 
     for (0 => int i; i < Math.random2(5, 20); i++) {            
         MIDInote(marimbaOut, 1, note, velocity); 
-        100::ms => now;
+        100::ms => now;   
     }
+    durations[durations.size()-1] * 2::ms => now;
     MIDInote(marimbaOut, 0, note, velocity); 
     
     1 => marimbaIsOff;  
