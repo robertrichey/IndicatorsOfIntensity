@@ -195,15 +195,10 @@ int buffVoices[numBuffVoices];
 SndBuf buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
 SinOsc sine[numSineVoices];
 Envelope env[numSineVoices]; // for sine waves
-NRev rev;
 
-0.0 => rev.mix;
-
-
-// Connect UGens to rev
-makePatch(buff, rev);
-makePatch(sine, env, rev);
-rev => dac;
+// Connect UGens to dac
+makePatch(buff);
+makePatch(sine, env);
 
 
 // Bools for checking if an instrument is playing
@@ -212,9 +207,6 @@ rev => dac;
 1 => int marimbaIsOff;
 1 => int fluteIsOff;
 1 => int guitarIsOff;
-
-// TODO: bad use of global?
-0 => int lastDrum;
 
 
 // Set length of piece
@@ -226,13 +218,18 @@ totalDuration / numberOfSamples => float sampleRate;
 // TODO: how to handle global array? better as dur rather than int?
 [100, 200, 400, 800] @=> int durations[];
 
+// Create and launch FM wave in background
+RideData data;
 
-// launch FM wave in background
 ShiftingFMWave wave;
+data.getGrains(5) @=> wave.grains;
+totalDuration => wave.totalDuration;
 spork ~ wave.play();
 
 
 //----------- MAIN LOOP -----------//
+
+0 => int lastDrum;
 
 for (1 => int i; i < numberOfSamples; i++) {
     if (samples[i].power.max > samples[i-1].power.max && marimbaIsOff) {
@@ -280,17 +277,17 @@ for (1 => int i; i < numberOfSamples; i++) {
 
 
 // TODO: Document
-fun void makePatch(SndBuf instrument[], NRev rev) {    
+fun void makePatch(SndBuf instrument[]) {    
     for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => rev;
+        instrument[i] => dac;
         me.dir() + "bass_drum.wav" => buff[i].read;
         buff[i].samples() => buff[i].pos;
     }
 }
 
-fun void makePatch(SinOsc instrument[], Envelope env[], NRev rev) {
+fun void makePatch(SinOsc instrument[], Envelope env[]) {
     for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => env[i] => rev;
+        instrument[i] => env[i] => dac;
         2500::ms => env[i].duration;
     }
 }
@@ -319,7 +316,7 @@ fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
         rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
         0 => buff[which].pos;
         
-        // fade fm wave in and out, 45% chance to play
+        // fade fm wave in and out, 55% chance to play
         if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
             //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;//, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
             wave.turnOn(i, lastDrum, sampleRate);

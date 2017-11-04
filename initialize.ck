@@ -16,6 +16,7 @@ chuck midi => ableton => chuck audio(?)
 sound quality in DAW?
 use of filters on ugens
 panning
+make use of multiple FM waves?
 different data sets
 Based number of notes/velocity/rhythmic complexity on data?
 Set gain function for FM wave? base on gain of drums

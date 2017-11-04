@@ -1,55 +1,52 @@
 public class ShiftingFMWave {
-    RideData data;
-    data.getGrains(5) @=> SampleGrains oscGrains;
-    
+    SampleGrains grains;
+    float totalDuration;
     1 => int isOff;
     
     // PATCH
-    SinOsc modulator => TriOsc carrier => Envelope env => NRev rev => dac;
-
-    0.0 => rev.mix;
+    SinOsc modulator => TriOsc carrier => Envelope env => dac;
     
     // Tell the oscillator to interpret input as frequency modulation
     2 => carrier.sync;
-    
-    900000 => float totalDuration;
-    totalDuration / oscGrains.numberOfGrains => float shiftDur;
-    
+        
     fun void play() {
+        totalDuration / grains.numberOfGrains => float shiftDur;
+        
         // Play sound based on grain for total duration
-        for (0 => int i; i < oscGrains.numberOfGrains - 1; i++) {
+        for (0 => int i; i < grains.numberOfGrains - 1; i++) {
             
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 36, 94, oscGrains.power[i])) => 
+            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i])) => 
             float startCarFreq;
             
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 36, 94, oscGrains.power[i + 1])) => 
+            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i + 1])) => 
             float endCarFreq;
             
             
-            getTransformation(oscGrains.minSpeed, oscGrains.maxSpeed, 0, 500, oscGrains.speed[i]) => 
+            getTransformation(grains.minSpeed, grains.maxSpeed, 0, 500, grains.speed[i]) => 
             float startModFreq;
             
-            getTransformation(oscGrains.minSpeed, oscGrains.maxSpeed, 0, 500, oscGrains.speed[i + 1]) => 
+            getTransformation(grains.minSpeed, grains.maxSpeed, 0, 500, grains.speed[i + 1]) => 
             float endModFreq;
             
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i]) => 
+            getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i]) => 
             float startCarGain;
             
-            getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i + 1]) => 
+            getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i + 1]) => 
             float endCarGain;
             
             
-            getTransformation(oscGrains.minHeartRate, oscGrains.maxHeartRate, 0, 10000, oscGrains.heartRate[i]) => 
+            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0, 10000, grains.heartRate[i]) => 
             float startModGain;
             
-            getTransformation(oscGrains.minHeartRate, oscGrains.maxHeartRate, 0, 10000, oscGrains.heartRate[i + 1]) => 
+            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0, 10000, grains.heartRate[i + 1]) => 
             float endModGain;
             
             spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);
             spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
             spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
             spork ~ shiftModGain(startModGain, endModGain, shiftDur);
+
             shiftDur::ms => now;
         }
     }
