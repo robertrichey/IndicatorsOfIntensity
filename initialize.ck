@@ -12,8 +12,9 @@ Machine.add(me.dir() + "/ShiftingFMWave.ck");
 Machine.add(me.dir() + "/MinMaxMIDI.ck");
 
 /*
-chuck midi => ableton => chuck audio(?)
+***Make each instrument its own object?***
 sound quality in DAW?
+Use WCU computers for better MIDI instruments?
 use of filters on ugens
 panning
 make use of multiple FM waves?
