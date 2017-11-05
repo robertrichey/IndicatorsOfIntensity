@@ -89,7 +89,7 @@ makePatch(sine, env);
 1 => int fluteIsOff;
 1 => int guitarIsOff;
 
-// DATA - TODO: use sample array from data rather than copying?
+// Use cycling data set
 RideData data;
 data.getSamples() @=> Sample samples[];
 samples.size() => int numberOfSamples;

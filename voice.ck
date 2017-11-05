@@ -1,80 +1,89 @@
 SndBuf buff[12];
+Gain g;
+Gain g2;
+Gain g3;
+DelayL d;
 Envelope env;
 Pan2 pan;
-
-10::ms => env.duration;
+800::ms => env.duration;
 
 for (0 => int i; i < buff.size(); i++) {
-    "/recordings/Record_000" + Std.itoa(i+5) + ".wav" => string filename;
+    "/recordings/Record_" + Std.itoa(i+5) + ".wav" => string filename;
     me.dir() + filename => buff[i].read;
     buff[i].samples() => buff[i].pos;
-    buff[i] => env => dac;//pan => dac;
-}
-
-while (true) {
-    Math.random2f(-1.0, 1.0) => pan.pan;
-    Math.random2(0, buff.size()-1) => int which;
-    Math.random2f(0.05, 0.05) => buff[which].gain;
-    0 => buff[which].pos;
     
-    env.keyOn();
-    buff[which].length() => now;
-    env.keyOff();
-    env.duration() => now;
-    2000::ms => now;
+    // our patch - feedforward part
+    buff[i] => g;
+    buff[i] => g2;
 }
+g => d => env => pan => dac;
+g2 => env => pan => dac;
+// feedback
+d => g3 => d;
+//d => pan;
+//g3 => pan;
+-1.0 => pan.pan;
+// set gain parameters
+2.5 => g.gain;
+2.5 => g2.gain;
+0.95 => g3.gain;
 
 RideData data;
-data.getGrains(5) @=> SampleGrains oscGrains;
-
-1 => int isOff;
-
-// PATCH
-
+data.getGrains(20) @=> SampleGrains oscGrains;
 
 900000 => float totalDuration;
 totalDuration / oscGrains.numberOfGrains => float shiftDur;
+
+spork ~ play();
+
+[-1.0, -0.5, 0.0, 0.5, 1.0] @=> float pans[];
+// increase chance over time
+while (true) {
+    Math.random2(0, buff.size()-1) => int which;
+    pans[Math.random2(0, pans.size()-1)] => pan.pan;
+        
+    0 => buff[which].pos;
+    env.keyOn();
+    buff[which].length() => now;
+    env.keyOff();
+    0.5::second => now;
+}
+
 
 fun void play() {
     // Play sound based on grain for total duration
     for (0 => int i; i < oscGrains.numberOfGrains - 1; i++) {
         
-        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 36, 94, oscGrains.power[i])) => 
-        float startCarFreq;
+        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 1, 40, oscGrains.power[i])) => 
+        float startDelay;
         
-        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 36, 94, oscGrains.power[i + 1])) => 
-        float endCarFreq;
-        
-        
-        getTransformation(oscGrains.minSpeed, oscGrains.maxSpeed, 0, 500, oscGrains.speed[i]) => 
-        float startModFreq;
-        
-        getTransformation(oscGrains.minSpeed, oscGrains.maxSpeed, 0, 500, oscGrains.speed[i + 1]) => 
-        float endModFreq;
+        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 1, 40, oscGrains.power[i + 1])) => 
+        float endDelay;
         
         
-        getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i]) => 
-        float startCarGain;
+        Std.mtof(getTransformation(oscGrains.minSpeed, oscGrains.maxSpeed, 0.5, 2.5, oscGrains.speed[i])) => 
+        float startG;
         
-        getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.08, 0.15, oscGrains.cadence[i + 1]) => 
-        float endCarGain;
+        Std.mtof(getTransformation(oscGrains.minSpeed, oscGrains.maxSpeed, 0.5, 2.5, oscGrains.speed[i + 1])) => 
+        float endG;
         
         
-        getTransformation(oscGrains.minHeartRate, oscGrains.maxHeartRate, 0, 10000, oscGrains.heartRate[i]) => 
-        float startModGain;
+        Std.mtof(getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.5, 2.5, oscGrains.cadence[i])) => 
+        float startG2;
         
-        getTransformation(oscGrains.minHeartRate, oscGrains.maxHeartRate, 0, 10000, oscGrains.heartRate[i + 1]) => 
-        float endModGain;
+        Std.mtof(getTransformation(oscGrains.minCadence, oscGrains.maxCadence, 0.5, 2.5, oscGrains.cadence[i + 1])) => 
+        float endG2;
         
-        spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);
-        spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
-        spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
-        spork ~ shiftModGain(startModGain, endModGain, shiftDur);
+        spork ~ shiftDelay(startDelay, endDelay, shiftDur);
+        //spork ~ shiftG(startG, endG, shiftDur);
+        //spork ~ shiftG2(startG2, endG2, shiftDur);
+
         shiftDur::ms => now;
     }
 }
 <<< "Done" >>>;
 
+/*
 // TODO: document, use isOn bool function
 fun void turnOn(int a, int b, float sampleRate) {
     (a - b) * sampleRate => float ringTime;
@@ -89,6 +98,7 @@ fun void turnOn(int a, int b, float sampleRate) {
     env.duration() => now;
     1 => isOff;
 }
+*/
 
 /** 
 * Linear transformation:
@@ -99,15 +109,40 @@ fun float getTransformation(float a, float b, float c, float d, float x) {
     return (x - a) / (b - a) * (d - c) + c;
 }
 
-fun void shiftCarPitch(float start, float finish, float duration) {
+fun void shiftDelay(float start, float finish, float duration) {
     finish - start => float diff;
     diff / duration => float grain;
-    start => float current => carrier.freq;
+    start => float current;
+    current::ms => d.delay;
     
     for (0 => int i; i < duration; i++) {
         grain +=> current;
-        current => carrier.freq;
+        current::ms => d.delay;
         1::ms => now;
     }
-    finish => carrier.freq;
+    finish::ms => d.delay;
+}
+
+fun void shiftG(float start, float finish, float duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => g.gain;
+    
+    for (0 => int i; i < duration; i++) {
+        grain +=> current => g.gain;
+        1::ms => now;
+    }
+    finish => g.gain;
+}
+
+fun void shiftG2(float start, float finish, float duration) {
+    finish - start => float diff;
+    diff / duration => float grain;
+    start => float current => g2.gain;
+    
+    for (0 => int i; i < duration; i++) {
+        grain +=> current => g2.gain;
+        1::ms => now;
+    }
+    finish => g2.gain;
 }
