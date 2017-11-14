@@ -25,11 +25,11 @@ d => g3 => d;
 -1.0 => pan.pan;
 // set gain parameters
 2.5 => g.gain;
-2.5 => g2.gain;
+1.5 => g2.gain;
 0.95 => g3.gain;
 
 RideData data;
-data.getGrains(20) @=> SampleGrains oscGrains;
+data.getGrains(25) @=> SampleGrains oscGrains;
 
 900000 => float totalDuration;
 totalDuration / oscGrains.numberOfGrains => float shiftDur;
@@ -54,10 +54,10 @@ fun void play() {
     // Play sound based on grain for total duration
     for (0 => int i; i < oscGrains.numberOfGrains - 1; i++) {
         
-        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 1, 40, oscGrains.power[i])) => 
+        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 2.5, 40, oscGrains.power[i])) => 
         float startDelay;
         
-        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 1, 40, oscGrains.power[i + 1])) => 
+        Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 2.5, 40, oscGrains.power[i + 1])) => 
         float endDelay;
         
         
