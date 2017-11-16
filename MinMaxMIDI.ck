@@ -95,7 +95,7 @@ data.getSamples() @=> Sample samples[];
 samples.size() => int numberOfSamples;
 
 // Set length of piece
-900000 => float totalDuration;
+960000 => float totalDuration;
 totalDuration / numberOfSamples => float sampleRate;
 <<< sampleRate >>>;
 

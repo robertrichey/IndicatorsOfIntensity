@@ -8,8 +8,10 @@ Machine.add(me.dir() + "/SampleGrains.ck");
 Machine.add(me.dir() + "/RideData.ck");
 Machine.add(me.dir() + "/ShiftingFMWave.ck");
 
-// performance file (~15 minutes)
+// performance files (~16 minutes)
 Machine.add(me.dir() + "/MinMaxMIDI.ck");
+Machine.add(me.dir() + "/bikeSounds.ck");
+
 
 /*
 ***Make each instrument its own object?***
