@@ -28,12 +28,15 @@ totalDuration / oscGrains.numberOfGrains => float shiftDur;
 
 spork ~ play();
 
-2 => float x;
 
-0 => int index;
+0.5 => g.gain;
+0.5 => g2.gain;
+0.98 => g3.gain => g4.gain => g5.gain;
+
 
 spork ~ panShift();
 
+0 => int index;
 // time loop
 while (true) {
     Math.random2f(-1.0, 1.0) => pan.pan;
@@ -41,21 +44,18 @@ while (true) {
     me.dir() + filename[index++ % filename.size()] => buff.read;
 
     // set parameters
+    2 => float x;
+    Math.random2(1, 12) => int y;
+    Math.random2(1, 12) => int z;
+    
     x::ms => d.delay;
-    
-    raiseByHalfSteps(x, 2)::ms => d2.delay;
-    
-    raiseByHalfSteps(x, 7)::ms => d3.delay;
-    
-    // AVOID Q OF 0.01 - LOUD
-    
-    3.0 => g.gain;
-    0.5 => g2.gain;
-    0.98 => g3.gain => g4.gain => g5.gain;
+    raiseByHalfSteps(x, y)::ms => d2.delay;
+    raiseByHalfSteps(x, z)::ms => d3.delay;
+
     
     buff.length() => now;
-    5000::ms => now;
-    0 => buff.pos;
+    3000::ms => now;
+    //0 => buff.pos;
     //Math.random2f(1, 12) => x;
     //<<< x >>>;
 }
@@ -110,32 +110,27 @@ fun void shiftDelay(float start, float finish, float duration) {
     finish - start => float diff;
     diff / duration => float grain;
     start => float current;
-    current::ms => d.delay;
-    
     // set parameters
-    
-    raiseByHalfSteps(current, 2)::ms => d2.delay;
-    
-    raiseByHalfSteps(current, 7)::ms => d3.delay;
+    current::ms => d.delay;
+    raiseByHalfSteps(current, y)::ms => d2.delay;
+    raiseByHalfSteps(current, z)::ms => d3.delay;
     
     for (0 => int i; i < duration; i++) {
         grain +=> current;
- current::ms => d.delay;
-    
-    // set parameters
-    
-    raiseByHalfSteps(current, 2)::ms => d2.delay;
-    
-    raiseByHalfSteps(current, 7)::ms => d3.delay;
-    1::ms => now;
+        
+        // set parameters
+        current::ms => d.delay;
+        raiseByHalfSteps(current, y)::ms => d2.delay;
+        raiseByHalfSteps(current, z)::ms => d3.delay;
+        
+        1::ms => now;
     }
     finish::ms => d.delay;
     
     // set parameters
-    
-    raiseByHalfSteps(finish, 2)::ms => d2.delay;
-    
-    raiseByHalfSteps(finish, 7)::ms => d3.delay;
+    finish::ms => d.delay;
+    raiseByHalfSteps(current, y)::ms => d2.delay;
+    raiseByHalfSteps(current, z)::ms => d3.delay;
 } 
 
 /**
