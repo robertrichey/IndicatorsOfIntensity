@@ -1,6 +1,6 @@
 public class ShiftingVoice {
     // our patch - feedforward part
-    SndBuf buff => Gain g => DelayL d => Envelope env => Pan2 pan;
+    SndBuf2 buff => Gain g => DelayL d => Envelope env => Pan2 pan;
     g => DelayL d2 => env => pan;
     g => DelayL d3 => env => pan;
     
@@ -12,15 +12,17 @@ public class ShiftingVoice {
     d2 => Gain g4 => d2;
     d3 => Gain g5 => d3;
     
-    string filename[5];
+    //0.98 => buff.rate;
+    
+    string filename[23];
     
     for (0 => int i; i < filename.size(); i++) {
         <<< i >>>;
-        "/recordings/" + Std.itoa(i) + ".wav" => filename[i];
+        "/voice/" + Std.itoa(i) + ".wav" => filename[i];
     }
     
     RideData data;
-    data.getGrains(20) @=> SampleGrains oscGrains;
+    data.getGrains(10) @=> SampleGrains oscGrains;
     
     900000 => float totalDuration;
     totalDuration / oscGrains.numberOfGrains => float shiftDur;
@@ -33,7 +35,7 @@ public class ShiftingVoice {
     
     0.4 => g.gain;
     0.5 => g2.gain;
-    0.96 => g3.gain => g4.gain => g5.gain;
+    0.92 => g3.gain => g4.gain => g5.gain;
     
     spork ~ shift();
     spork ~ panShift();
@@ -60,7 +62,7 @@ public class ShiftingVoice {
         env.keyOn();
         
         buff.length() - env.duration() => now;
-        3000::ms => now;
+        2000::ms => now;
         env.keyOff();
         env.duration() => now;
         

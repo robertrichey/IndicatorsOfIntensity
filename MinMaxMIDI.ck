@@ -73,12 +73,23 @@ int sineVoices[numSineVoices];
 3 => int numBuffVoices;
 int buffVoices[numBuffVoices];
 
-SndBuf buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
+SndBuf2 buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
+Pan2 pan[numBuffVoices];
+
+2.0 => buff[0].rate;
+0.5 => buff[1].rate;
+1.0 => buff[2].rate;
+
+
+-0.4 => pan[0].pan;
+0 => pan[1].pan;
+0.4 => pan[2].pan;
+
 SinOsc sine[numSineVoices];
 Envelope env[numSineVoices]; // for sine waves
 
 // Connect UGens to dac
-makePatch(buff);
+makePatch(buff, pan);
 makePatch(sine, env);
 
 
@@ -162,9 +173,9 @@ for (1 => int i; i < numberOfSamples; i++) {
 
 
 // TODO: Document
-fun void makePatch(SndBuf instrument[]) {    
+fun void makePatch(SndBuf2 instrument[], Pan2 pan[]) {    
     for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => dac;
+        instrument[i] => pan[i] => dac;
         me.dir() + "bass_drum.wav" => buff[i].read;
         buff[i].samples() => buff[i].pos;
     }
@@ -177,43 +188,43 @@ fun void makePatch(SinOsc instrument[], Envelope env[]) {
     }
 }
 
-fun void playDrum(SndBuf instrument[], int voices[], int i, int lastDrum) {
+fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
     0 => drumIsOff;
     
     [0.5, 1.0, 2.0] @=> float rates[];
     setDrumGain(instrument);
     
     for (0 => int i; i < 2; i++) {
-        getVoice(voices) => int which;
+        getVoice2(voices) => int which;
         
         if (which > -1) {
             if (Math.random2f(0.0, 1.0) > 0.33) {
-                rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
+                //rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
                 0 => buff[which].pos;
                 Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
             }
+            0 => voices[which]; 
         }
-        0 => voices[which]; 
     }
-    getVoice(voices) => int which;
+    getVoice2(voices) => int which;
     
     if (which > -1) {
-        rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
+        //rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
         0 => buff[which].pos;
         
         // fade fm wave in and out, 55% chance to play
         if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
             //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
             //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
-            wave.turnOn(i, lastDrum, sampleRate);
+            wave.turnOn(i, lastDrum, sampleRate, pan[which].pan());
         }
+        0 => voices[which]; 
     }
-    0 => voices[which]; 
     
     1 => drumIsOff;
 }
 
-fun void setDrumGain(SndBuf buff[]) {
+fun void setDrumGain(SndBuf2 buff[]) {
     for (0 => int i; i < buff.size(); i++) {
         Math.random2f(2.0, 3.0) => buff[i].gain;
     }
@@ -417,4 +428,15 @@ fun int getVoice(int voices[]) {
         }
     }
     return -1;
+}
+
+fun int getVoice2(int voices[]) {    
+    while (true) { 
+        Math.random2(0, voices.size()-1) => int which;
+        
+        if (voices[which] == 0) {            
+            1 => voices[which];
+            return which;
+        }
+    }
 }

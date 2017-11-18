@@ -18,6 +18,7 @@ Machine.add(me.dir() + "/PowerZones.ck");
 /*
 ***Make each instrument its own object?***
 sound quality in DAW?
+Fix early voice entry, clarify algo
 Use WCU computers for better MIDI instruments?
 use of filters on ugens
 panning

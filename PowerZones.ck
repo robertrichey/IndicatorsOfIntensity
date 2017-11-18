@@ -53,7 +53,7 @@ for (0 => int i; i < numberOfSamples; i++) {
             count++;
         }
         else {
-            if (Math.randomf() > 0.4 && voice.isOff) {
+            if (Math.randomf() > 0.2 && voice.isOff) {
                 spork ~ voice.play();
             }
             <<< "count", count, i, ++change >>>; 

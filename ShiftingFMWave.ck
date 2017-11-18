@@ -4,7 +4,7 @@ public class ShiftingFMWave {
     1 => int isOff;
     
     // PATCH
-    SinOsc modulator => TriOsc carrier => Envelope env => dac;
+    SinOsc modulator => TriOsc carrier => Envelope env => Pan2 pan => dac;
     
     // Tell the oscillator to interpret input as frequency modulation
     2 => carrier.sync;
@@ -53,8 +53,9 @@ public class ShiftingFMWave {
     <<< "Done" >>>;
     
     // TODO: document, use isOn bool function
-    fun void turnOn(int a, int b, float sampleRate) {
+    fun void turnOn(int a, int b, float sampleRate, float p) {
         (a - b) * sampleRate => float ringTime;
+        p => pan.pan;
         
         0 => isOff;
         ringTime * 0.005::ms => env.duration;
