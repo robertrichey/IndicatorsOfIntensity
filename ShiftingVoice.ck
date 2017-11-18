@@ -24,7 +24,7 @@ public class ShiftingVoice {
     RideData data;
     data.getGrains(10) @=> SampleGrains oscGrains;
     
-    900000 => float totalDuration;
+    960000 => float totalDuration;
     totalDuration / oscGrains.numberOfGrains => float shiftDur;
     
     

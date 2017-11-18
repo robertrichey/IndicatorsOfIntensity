@@ -21,48 +21,20 @@ totalDuration / numberOfSamples => float sampleRate;
 <<< voice.isOff >>>;
 
 for (0 => int i; i < numberOfSamples; i++) {
-    /*getZone(samples[i-1].power.current) => int previous;
-    getZone(samples[i].power.current) => int current;
-    
-    if (previous != 0 && current != 0) {
-        if (previous == current) {
-            count++;
-        }
-        else {
-            0 => count;
-        }
-        if (i % 10 == 0) {
-            <<< "previous", previous, samples[i-1].power.current >>>; 
-            <<< "current", current, samples[i].power.current >>>; 
-            <<< "count", count >>>; 
-            <<< " ", "" >>>; 
-        }
-    }*/
-    
-    if (samples[i].power.current != 0) {
-        samples[i].power.current +=> current;
-        currentCount++;
-    }
+    samples[i].power.current +=> current;
+    currentCount++;
     
     if (currentCount == 30) {
-        //<<< i >>>;
-        //<<< "Current total", current >>>;
         getZone(current / 30.0) => int currentZone;
         
-        if (currentZone == previousZone) {
-            count++;
-        }
-        else {
-            if (Math.randomf() > 0.2 && voice.isOff) {
+        // 300 prevents voice from entering too early
+        if (currentZone != previousZone) {
+            if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
                 spork ~ voice.play();
             }
             <<< "count", count, i, ++change >>>; 
             0 => count;
         }
-        //<<< "previous", previousZone >>>; 
-        //<<< "current", currentZone >>>; 
-        //<<< "count", count >>>; 
-        //<<< " ", "" >>>; 
         
         currentZone => previousZone;
         0 => current;
@@ -95,3 +67,51 @@ fun int getZone(float power) {
     }
     return zone;
 }
+
+/*getZone(samples[i-1].power.current) => int previous;
+getZone(samples[i].power.current) => int current;
+
+if (previous != 0 && current != 0) {
+    if (previous == current) {
+        count++;
+    }
+    else {
+        0 => count;
+    }
+    if (i % 10 == 0) {
+        <<< "previous", previous, samples[i-1].power.current >>>; 
+        <<< "current", current, samples[i].power.current >>>; 
+        <<< "count", count >>>; 
+        <<< " ", "" >>>; 
+    }
+}
+
+if (samples[i].power.current != 0) {
+    samples[i].power.current +=> current;
+    currentCount++;
+}
+
+if (currentCount == 30) {
+    //<<< i >>>;
+    //<<< "Current total", current >>>;
+    getZone(current / 30.0) => int currentZone;
+    
+    if (currentZone == previousZone) {
+        count++;
+    }
+    else {
+        if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
+            spork ~ voice.play();
+        }
+        <<< "count", count, i, ++change >>>; 
+        0 => count;
+    }
+    //<<< "previous", previousZone >>>; 
+    //<<< "current", currentZone >>>; 
+    //<<< "count", count >>>; 
+    //<<< " ", "" >>>; 
+    
+    currentZone => previousZone;
+    0 => current;
+    0 => currentCount;
+}*/
