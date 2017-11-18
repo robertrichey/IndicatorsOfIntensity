@@ -17,7 +17,7 @@ string filename[12];
 
 for (0 => int i; i < filename.size(); i++) {
         <<< i >>>;
-    "/recordings/Record_" + Std.itoa(i+5) + ".wav" => filename[i];
+    "/recordings/" + Std.itoa(i) + ".wav" => filename[i];
 }
 
 RideData data;
@@ -28,6 +28,11 @@ totalDuration / oscGrains.numberOfGrains => float shiftDur;
 
 spork ~ play();
 
+
+// set parameters
+2 => float x;
+Math.random2(1, 12) => int y;
+Math.random2(1, 12) => int z;
 
 0.5 => g.gain;
 0.5 => g2.gain;
@@ -45,8 +50,8 @@ while (true) {
 
     // set parameters
     2 => float x;
-    Math.random2(1, 12) => int y;
-    Math.random2(1, 12) => int z;
+    Math.random2(1, 12) => y;
+    Math.random2(1, 12) => z;
     
     x::ms => d.delay;
     raiseByHalfSteps(x, y)::ms => d2.delay;

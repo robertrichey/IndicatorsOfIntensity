@@ -2,10 +2,16 @@ SndBuf buffer;
 Multicomb combs[3];
 ResonZ filters[3];
 
+Envelope e;
 //filters[0] => 
-buffer => combs[0] => filters[0] => dac;
-buffer => combs[1] => filters[1] => dac;
-buffer => combs[2] => filters[2] => dac;
+buffer => combs[0] => e;
+buffer => combs[1] => e;
+buffer => combs[2] => e;
+
+e => Pan2 p => dac;
+0 => p.pan;
+
+6000::ms => e.duration;
 
 "/recordings/Record_" + Std.itoa(5) + ".wav" => string filepath;
 me.dir() + filepath => buffer.read;
@@ -18,7 +24,7 @@ revTime::ms => combs[2].revtime;
 
 while (true) {
     //Math.random2f(50,60) => float x;
-    80 => float x;
+    600 => float x;
 
     x => float freq1;
     combs[0].set(freq1, freq1);
@@ -34,6 +40,6 @@ while (true) {
     freq3 => filters[2].freq;
     
     1.0 => filters[0].Q => filters[1].Q => filters[2].Q;
-
+    e.keyOn();
     1::minute => now;
 }

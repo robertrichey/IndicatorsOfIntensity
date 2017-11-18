@@ -7,10 +7,12 @@ Machine.add(me.dir() + "/Sample.ck");
 Machine.add(me.dir() + "/SampleGrains.ck");
 Machine.add(me.dir() + "/RideData.ck");
 Machine.add(me.dir() + "/ShiftingFMWave.ck");
+Machine.add(me.dir() + "/ShiftingVoice.ck");
 
 // performance files (~16 minutes)
 Machine.add(me.dir() + "/MinMaxMIDI.ck");
 Machine.add(me.dir() + "/bikeSounds.ck");
+Machine.add(me.dir() + "/PowerZones.ck");
 
 
 /*
