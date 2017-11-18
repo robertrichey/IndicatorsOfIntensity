@@ -3,6 +3,8 @@ public class ShiftingFMWave {
     float totalDuration;
     1 => int isOff;
     
+    spork ~ panShift();
+    
     // PATCH
     SinOsc modulator => TriOsc carrier => Envelope env => Pan2 pan => dac;
     
@@ -127,5 +129,32 @@ public class ShiftingFMWave {
             1::ms => now;
         }
         finish => modulator.gain;
+    }
+    
+    fun void panShift() {
+        while (true) {
+            if (pan.pan() > 0) {
+                panLeft();
+            }
+            else {
+                panRight();
+            }
+        }
+    }
+    
+    fun void panLeft() {
+        while (pan.pan() > -0.5) {
+            pan.pan() - 0.005 => pan.pan;
+            15::ms => now;
+            //<<< pan.pan() >>>;
+        }
+    }
+    
+    fun void panRight() {
+        while (pan.pan() < 0.5) {
+            pan.pan() + 0.005 => pan.pan;
+            15::ms => now;
+            //<<< pan.pan() >>>;
+        }
     }
 }
