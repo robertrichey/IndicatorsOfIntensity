@@ -16,10 +16,15 @@ Machine.add(me.dir() + "/PowerZones.ck");
 
 
 /*
+Fix bug related to FM wave extending beyond samples - silence for last 5-10%?
+Always end w/ chord in guitar
 ***Make each instrument its own object?***
 sound quality in DAW?
 Fix early voice entry, clarify algo
-Use WCU computers for better MIDI instruments?
+integrate bike and voice samples with rest of code
+how to handle reuse of functions?
+DOCUMENT, remove stale comments
+Use Ableton suite for better MIDI instruments?
 use of filters on ugens
 panning
 make use of multiple FM waves?
@@ -28,9 +33,6 @@ Based number of notes/velocity/rhythmic complexity on data?
 Set gain function for FM wave? base on gain of drums
 Improve quality of drum sound
 Control volume of MIDI flute
-Send all audio to ableton, use master reverb
 Break drum/FM wave method into smaller methods
-Extract ride data from MinMax to seperate class
 Set performance duration in one file (make param in FM class)
-Extend performance to 20 minutes, decrease duration of FM wave
 */

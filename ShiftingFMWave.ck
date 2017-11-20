@@ -143,7 +143,7 @@ public class ShiftingFMWave {
     }
     
     fun void panLeft() {
-        while (pan.pan() > -0.5) {
+        while (pan.pan() > -0.9) {
             pan.pan() - 0.005 => pan.pan;
             15::ms => now;
             //<<< pan.pan() >>>;
@@ -151,7 +151,7 @@ public class ShiftingFMWave {
     }
     
     fun void panRight() {
-        while (pan.pan() < 0.5) {
+        while (pan.pan() < 0.9) {
             pan.pan() + 0.005 => pan.pan;
             15::ms => now;
             //<<< pan.pan() >>>;

@@ -218,6 +218,7 @@ fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
             //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
             wave.turnOn(i, lastDrum, sampleRate, pan[which].pan());
         }
+        Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
         0 => voices[which]; 
     }
     

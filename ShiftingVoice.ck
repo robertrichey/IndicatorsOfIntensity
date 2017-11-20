@@ -12,7 +12,7 @@ public class ShiftingVoice {
     d2 => Gain g4 => d2;
     d3 => Gain g5 => d3;
     
-    //0.98 => buff.rate;
+    0.99 => buff.rate;
     
     string filename[23];
     
@@ -22,7 +22,7 @@ public class ShiftingVoice {
     }
     
     RideData data;
-    data.getGrains(10) @=> SampleGrains oscGrains;
+    data.getGrains(8) @=> SampleGrains oscGrains;
     
     960000 => float totalDuration;
     totalDuration / oscGrains.numberOfGrains => float shiftDur;
@@ -33,7 +33,7 @@ public class ShiftingVoice {
     Math.random2(1, 12) => int y;
     Math.random2(1, 12) => int z;
     
-    0.4 => g.gain;
+    0.38 => g.gain;
     0.5 => g2.gain;
     0.92 => g3.gain => g4.gain => g5.gain;
     
@@ -51,14 +51,15 @@ public class ShiftingVoice {
         
         // set parameters
         2 => float x;
-        Math.random2(1, 12) => y;
+        7 => y;
         Math.random2(1, 12) => z;
         
         x::ms => d.delay;
         raiseByHalfSteps(x, y)::ms => d2.delay;
         raiseByHalfSteps(x, z)::ms => d3.delay;
         
-        buff.length() * 0.25 => env.duration;
+        //buff.length() * 0.25 => env.duration;
+        3000::ms => env.duration;
         env.keyOn();
         
         buff.length() - env.duration() => now;
@@ -102,10 +103,10 @@ public class ShiftingVoice {
     fun void shift() {
         // Play sound based on grain for total duration
         for (0 => int i; i < oscGrains.numberOfGrains - 1; i++) {       
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 3, 12, oscGrains.power[i])) => 
+            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 3, 10, oscGrains.power[i])) => 
             float startDelay;
             
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 3, 12, oscGrains.power[i + 1])) => 
+            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 3, 10, oscGrains.power[i + 1])) => 
             float endDelay;
             
             spork ~ shiftDelay(startDelay, endDelay, shiftDur);
