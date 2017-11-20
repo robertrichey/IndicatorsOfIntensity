@@ -10,39 +10,34 @@ ShiftingVoice voice;
 totalDuration / numberOfSamples => float sampleRate;
 
 250 => int ftp;
-0 => int previousZone;
+1 => int previousZone;
 1 => int currentZone;
-0 => int count;
 
-0 => int current;
-0 => int currentCount;
-0 => int change;
+0 => float currentTotal;
+0 => int sampleCount;
 
-<<< voice.isOff >>>;
+30 => int sampleSize;
 
 for (0 => int i; i < numberOfSamples; i++) {
-    samples[i].power.current +=> current;
-    currentCount++;
+    samples[i].power.current +=> currentTotal;
+    sampleCount++;
     
-    if (currentCount == 30) {
-        getZone(current / 30.0) => int currentZone;
+    if (sampleCount == sampleSize) {
+        getZone(currentTotal / sampleSize) => int currentZone;
         
         // 300 prevents voice from entering too early
         if (currentZone != previousZone) {
             if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
                 spork ~ voice.play();
             }
-            <<< "count", count, i, ++change >>>; 
-            0 => count;
         }
         
         currentZone => previousZone;
-        0 => current;
-        0 => currentCount;
+        0 => currentTotal;
+        0 => sampleCount;
     }
     sampleRate::ms => now;
 }
-<<< "count", count >>>; 
 
 fun int getZone(float power) {
     int zone;
@@ -67,51 +62,3 @@ fun int getZone(float power) {
     }
     return zone;
 }
-
-/*getZone(samples[i-1].power.current) => int previous;
-getZone(samples[i].power.current) => int current;
-
-if (previous != 0 && current != 0) {
-    if (previous == current) {
-        count++;
-    }
-    else {
-        0 => count;
-    }
-    if (i % 10 == 0) {
-        <<< "previous", previous, samples[i-1].power.current >>>; 
-        <<< "current", current, samples[i].power.current >>>; 
-        <<< "count", count >>>; 
-        <<< " ", "" >>>; 
-    }
-}
-
-if (samples[i].power.current != 0) {
-    samples[i].power.current +=> current;
-    currentCount++;
-}
-
-if (currentCount == 30) {
-    //<<< i >>>;
-    //<<< "Current total", current >>>;
-    getZone(current / 30.0) => int currentZone;
-    
-    if (currentZone == previousZone) {
-        count++;
-    }
-    else {
-        if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
-            spork ~ voice.play();
-        }
-        <<< "count", count, i, ++change >>>; 
-        0 => count;
-    }
-    //<<< "previous", previousZone >>>; 
-    //<<< "current", currentZone >>>; 
-    //<<< "count", count >>>; 
-    //<<< " ", "" >>>; 
-    
-    currentZone => previousZone;
-    0 => current;
-    0 => currentCount;
-}*/

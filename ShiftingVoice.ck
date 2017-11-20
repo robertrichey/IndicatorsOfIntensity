@@ -33,9 +33,9 @@ public class ShiftingVoice {
     Math.random2(1, 12) => int y;
     Math.random2(1, 12) => int z;
     
-    0.38 => g.gain;
+    0.43 => g.gain;
     0.5 => g2.gain;
-    0.92 => g3.gain => g4.gain => g5.gain;
+    0.95 => g3.gain => g4.gain => g5.gain;
     
     spork ~ shift();
     spork ~ panShift();
