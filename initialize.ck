@@ -1,4 +1,4 @@
-// class files
+// Support classes
 Machine.add(me.dir() + "/Power.ck");
 Machine.add(me.dir() + "/Cadence.ck");
 Machine.add(me.dir() + "/HeartRate.ck");
@@ -9,10 +9,10 @@ Machine.add(me.dir() + "/RideData.ck");
 Machine.add(me.dir() + "/ShiftingFMWave.ck");
 Machine.add(me.dir() + "/ShiftingVoice.ck");
 
-// performance files (~16 minutes)
+// Performance classes (~16 minutes)
+Machine.add(me.dir() + "/PowerZones.ck");
 Machine.add(me.dir() + "/MinMaxMIDI.ck");
 Machine.add(me.dir() + "/bikeSounds.ck");
-Machine.add(me.dir() + "/PowerZones.ck");
 
 
 /*

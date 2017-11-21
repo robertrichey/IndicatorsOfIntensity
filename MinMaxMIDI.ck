@@ -123,6 +123,14 @@ totalDuration => wave.totalDuration;
 spork ~ wave.play();
 
 
+// Create and launch voices in background
+
+PowerZones zones;
+data.getSamples() @=> zones.samples;
+totalDuration => zones.totalDuration;
+spork ~ zones.play();
+
+
 //----------- MAIN LOOP -----------//
 
 0 => int lastDrum;
@@ -198,7 +206,7 @@ fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
         getVoice2(voices) => int which;
         
         if (which > -1) {
-            if (Math.random2f(0.0, 1.0) > 0.33) {
+            if (Math.randomf() > 0.33) {
                 //rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
                 0 => buff[which].pos;
                 Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
