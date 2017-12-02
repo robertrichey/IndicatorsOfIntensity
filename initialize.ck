@@ -16,6 +16,8 @@ Machine.add(me.dir() + "/bikeSounds.ck");
 
 
 /*
+Map voice samples to shifting based on content (power/speed/hr)
+Access RideData from outside ShiftingVoice 
 Fix bug related to FM wave extending beyond samples - silence for last 5-10%?
 Always end w/ chord in guitar
 ***Make each instrument its own object?***

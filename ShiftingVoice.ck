@@ -1,16 +1,17 @@
 public class ShiftingVoice {
-    // our patch - feedforward part
-    SndBuf2 buff => Gain g => DelayL d => Envelope env => Pan2 pan;
-    g => DelayL d2 => env => pan;
-    g => DelayL d3 => env => pan;
+    // our patch - feed1Gainforward part
+    SndBuf2 buff => Gain dryGain => Envelope env => Pan2 pan => dac;
     
-    buff => Gain g2 => env => pan;
-    pan => dac;
+    buff => Gain combGain;
     
+    combGain => DelayL d1 => env;
+    combGain => DelayL d2 => env;
+    combGain => DelayL d3 => env;
+        
     // feedback
-    d => Gain g3 => d;
-    d2 => Gain g4 => d2;
-    d3 => Gain g5 => d3;
+    d1 => Gain d1Gain => d1;
+    d2 => Gain d2Gain => d2;
+    d3 => Gain d3Gain => d3;
     
     0.99 => buff.rate;
     
@@ -33,9 +34,9 @@ public class ShiftingVoice {
     Math.random2(1, 12) => int y;
     Math.random2(1, 12) => int z;
     
-    0.43 => g.gain;
-    0.5 => g2.gain;
-    0.95 => g3.gain => g4.gain => g5.gain;
+    0.75 => combGain.gain;
+    0.5 => dryGain.gain;
+    0.95 => d1Gain.gain => d2Gain.gain => d3Gain.gain;
     
     spork ~ shift();
     spork ~ panShift();
@@ -54,7 +55,7 @@ public class ShiftingVoice {
         7 => y;
         Math.random2(1, 12) => z;
         
-        x::ms => d.delay;
+        x::ms => d1.delay;
         raiseByHalfSteps(x, y)::ms => d2.delay;
         raiseByHalfSteps(x, z)::ms => d3.delay;
         
@@ -124,7 +125,7 @@ public class ShiftingVoice {
         diff / duration => float grain;
         start => float current;
         // set parameters
-        current::ms => d.delay;
+        current::ms => d1.delay;
         raiseByHalfSteps(current, y)::ms => d2.delay;
         raiseByHalfSteps(current, z)::ms => d3.delay;
         
@@ -132,16 +133,16 @@ public class ShiftingVoice {
             grain +=> current;
             
             // set parameters
-            current::ms => d.delay;
+            current::ms => d1.delay;
             raiseByHalfSteps(current, y)::ms => d2.delay;
             raiseByHalfSteps(current, z)::ms => d3.delay;
             
             1::ms => now;
         }
-        finish::ms => d.delay;
+        finish::ms => d1.delay;
         
         // set parameters
-        finish::ms => d.delay;
+        finish::ms => d1.delay;
         raiseByHalfSteps(current, y)::ms => d2.delay;
         raiseByHalfSteps(current, z)::ms => d3.delay;
     } 
