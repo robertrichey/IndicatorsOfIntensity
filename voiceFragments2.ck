@@ -1,4 +1,4 @@
-12 => int numVoices;
+8 => int numVoices;
 int buffVoices[numVoices];
 
 SndBuf2 buff[numVoices];
@@ -19,7 +19,7 @@ DelayL delay3[numVoices];
 
 // Sound chain
 for (0 => int i; i < numVoices; i++) {
-    buff[i] => dryGain[i] => env[i] => rev[i] => pan[i] => dac;
+    buff[i] => dryGain[i] => env[i] => rev[i] => dac;//pan[i] => dac;
     
     buff[i] => combGain[i];
     
@@ -43,49 +43,55 @@ for (0 => int i; i < filename.size(); i++) {
 
 while (true) {
     spork ~ play();
-    Math.random2(500, 500)::ms => now;
+    Math.random2(2000, 8000)::ms => now;
 }
 
 fun void play() {
-    getVoice2(buffVoices) => int which;
+    getVoice(buffVoices) => int which;
     
-    if (Math.randomf() > 0.7) { 
-        turnOnComb(which);
-    }
-    else {
-        0 => combGain[which].gain;
-        Math.random2f(0.1, 0.9) => dryGain[which].gain;
+    if (which > -1) {
+        if (Math.randomf() > 0.0) { 
+            turnOnComb(which);
+        }
+        else {
+            0 => combGain[which].gain;
+            Math.random2f(0.5, 0.9) => dryGain[which].gain;
+            
+        }
+        if (Math.randomf() > 0.0) { 
+            //Math.random2f(0.1, 0.8) => rev[which].mix;
+            0 => rev[which].mix;
 
+        }
+        else {
+            0 => rev[which].mix;
+        }
+        
+        me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
+        1000::ms => env[which].duration;
+        Math.random2f(-0.8, 0.8) => pan[which].pan;
+        
+        Math.random2(3000, 6000) => int len;
+        Math.random2(0, buff[which].samples() - 0) => buff[which].pos;
+        <<< buff[which].samples() >>>;
+        
+        env[which].keyOn();
+        len::ms => now;
+        
+        env[which].keyOff();
+        env[which].duration() => now;
+        
+        // Let reverb subside
+        2000::ms => now;
+        
+        0 => buffVoices[which]; 
     }
-    if (Math.randomf() > 0.7) { 
-        Math.random2f(1.0, 0.8) => rev[which].mix;
-    }
-    else {
-        0 => rev[which].mix;
-    }
-    
-    me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
-    10::ms => env[which].duration;
-    Math.random2f(-0.8, 0.8) => pan[which].pan;
-    Math.random2(0, buff[which].samples()-0) => buff[which].pos;
-    <<< buff[which].samples() >>>;
-    
-    env[which].keyOn();
-    Math.random2(500, 2000)::ms => now;
-    
-    env[which].keyOff();
-    env[which].duration() => now;
-    
-    // Let reverb subside
-    2000::ms => now;
-    
-    0 => buffVoices[which]; 
 }
 
 fun void turnOnComb(int which) {
-    Math.random2f(0.4, 0.8) => dryGain[which].gain;
-    Math.random2f(0.6, 0.8) => combGain[which].gain;
-    Math.random2f(0.70, 0.99) => 
+    Math.random2f(0.2, 0.6) => dryGain[which].gain;
+    Math.random2f(0.3, 0.6) => combGain[which].gain;
+    Math.random2f(0.80, 0.97) => 
     delay1[which].gain => delay2[which].gain => delay3[which].gain;
     
     Math.random2f(1, 12) => float x;
@@ -97,15 +103,14 @@ fun void turnOnComb(int which) {
     raiseByHalfSteps(x, z)::ms => delay3[which].delay;
 }
 
-fun int getVoice2(int voices[]) {    
-    while (true) { 
-        Math.random2(0, voices.size()-1) => int which;
-        
-        if (voices[which] == 0) {            
-            1 => voices[which];
-            return which;
+fun int getVoice(int voices[]) {
+    for (int i; i < voices.size(); i++) { 
+        if (voices[i] == 0) {            
+            1 => voices[i];
+            return i;
         }
     }
+    return -1;
 }
 
 /**

@@ -21,26 +21,29 @@ for (0 => int i; i < buff.size(); i++) {
     2000::ms => del[i].max;
 }
 
-now + 10::second => time later;
+//now + 10::second => time later;
 
-while (now < later) {
+while (true) {
     spork ~ play();
-    Math.random2(100, 1000)::ms => now;
+    Math.random2(1000, 2000)::ms => now;
 }
 4000::ms => now;
 
 fun void play() {
     getVoice2(buffVoices) => int which;
+    int len;
     
     if (Math.randomf() > 0.7) {
         Math.random2f(0.1, 0.8) => rev[which].mix;
+        Math.random2(200, 500) => len;
     }
     else {
         0 => rev[which].mix;
+        Math.random2(1000, 2000) => len;
     }
     
     if (Math.randomf() > 1.7) {
-        Math.random2f(0.1, 0.8) => del[which].gain;
+        Math.random2f(0.1, 0.6) => del[which].gain;
         Math.random2f(50, 2000)::ms => del[which].delay;
     }
     else {
@@ -48,14 +51,14 @@ fun void play() {
     }
     
     me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
-    Math.random2f(0.5, 2.5) => buff[which].gain;
-    10::ms => env[which].duration;
+    Math.random2f(0.5, 1.5) => buff[which].gain;
+    20::ms => env[which].duration;
     Math.random2f(-0.8, 0.8) => pan[which].pan;
     Math.random2(0, buff[which].samples()-1) => buff[which].pos;
     <<< buff[which].samples() >>>;
     
     env[which].keyOn();
-    Math.random2(100, 1000)::ms => now;
+    len::ms => now;
     
     env[which].keyOff();
     env[which].duration() => now;
