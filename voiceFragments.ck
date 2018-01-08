@@ -6,7 +6,7 @@ Envelope env[numVoices];
 NRev rev[numVoices];
 Pan2 pan[numVoices]; 
 
-Delay del[numVoices];
+// Delay del[numVoices];
 
 string filename[23];
 
@@ -17,15 +17,15 @@ for (0 => int i; i < filename.size(); i++) {
 
 for (0 => int i; i < buff.size(); i++) {
     buff[i] => env[i] => rev[i] => pan[i] => dac;
-    buff[i] => del[i] => del[i] => rev[i];
-    2000::ms => del[i].max;
+    //buff[i] => del[i] => del[i] => rev[i];
+    //2000::ms => del[i].max;
 }
 
-//now + 10::second => time later;
+now + 10::second => time later;
 
-while (true) {
+while (now < later) {
     spork ~ play();
-    Math.random2(1000, 2000)::ms => now;
+    Math.random2(500, 1000)::ms => now;
 }
 4000::ms => now;
 
@@ -33,15 +33,15 @@ fun void play() {
     getVoice2(buffVoices) => int which;
     int len;
     
-    if (Math.randomf() > 0.7) {
-        Math.random2f(0.1, 0.8) => rev[which].mix;
+    if (Math.randomf() > 0.6) {
+        Math.random2f(0.3, 0.8) => rev[which].mix;
         Math.random2(200, 500) => len;
     }
     else {
         0 => rev[which].mix;
         Math.random2(1000, 2000) => len;
     }
-    
+    /*
     if (Math.randomf() > 1.7) {
         Math.random2f(0.1, 0.6) => del[which].gain;
         Math.random2f(50, 2000)::ms => del[which].delay;
@@ -49,7 +49,7 @@ fun void play() {
     else {
         0 => del[which].gain;
     }
-    
+    */
     me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
     Math.random2f(0.5, 1.5) => buff[which].gain;
     20::ms => env[which].duration;

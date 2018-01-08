@@ -1,3 +1,7 @@
+/**
+ * Plays a ShiftingVoice object when the rider changes power zones
+ */
+
 public class PowerZones {
     // Use cycling data set
     RideData data;
@@ -18,9 +22,13 @@ public class PowerZones {
     
     30 => int sampleSize;
     
+    /**
+     * Play voice if the current zone is not equal to the previous zone
+     */
     fun void play() {
         totalDuration / numberOfSamples => float sampleRate;
-
+        
+        // Loop through samples at sampleRate, calculating averages and checking current zone against previous zone
         for (0 => int i; i < numberOfSamples; i++) {
             samples[i].power.current +=> currentTotal;
             sampleCount++;
@@ -28,14 +36,15 @@ public class PowerZones {
             if (sampleCount == sampleSize) {
                 getZone(currentTotal / sampleSize) => int currentZone;
                 
-                // 300 prevents voice from entering too early
+                // Play voice 80% of the time
+                // 300 prevents voice from entering too early, ignores first 300 samples
                 if (currentZone != previousZone) {
                     if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
                         spork ~ voice.play();
                     }
+                    currentZone => previousZone;
                 }
                 
-                currentZone => previousZone;
                 0 => currentTotal;
                 0 => sampleCount;
             }
@@ -43,6 +52,9 @@ public class PowerZones {
         }
     }
     
+    /**
+     * Returns the power zone based on a given wattage
+     */
     fun int getZone(float power) {
         int zone;
         

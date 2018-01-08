@@ -43,7 +43,7 @@ for (0 => int i; i < filename.size(); i++) {
 
 while (true) {
     spork ~ play();
-    Math.random2(2000, 8000)::ms => now;
+    Math.random2(1000, 2500)::ms => now;
 }
 
 fun void play() {
@@ -71,7 +71,7 @@ fun void play() {
         1000::ms => env[which].duration;
         Math.random2f(-0.8, 0.8) => pan[which].pan;
         
-        Math.random2(3000, 6000) => int len;
+        Math.random2(2000, 5000) => int len;
         Math.random2(0, buff[which].samples() - 0) => buff[which].pos;
         <<< buff[which].samples() >>>;
         
