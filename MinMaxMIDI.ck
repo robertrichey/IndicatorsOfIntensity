@@ -117,8 +117,8 @@ totalDuration / numberOfSamples => float sampleRate;
 
 // Create and launch FM wave in background
 
-ShiftingFMWave wave;
-data.getGrains(5) @=> wave.grains;
+ShiftingFMWave2 wave;
+data.getGrains(3) @=> wave.grains;
 totalDuration => wave.totalDuration;
 spork ~ wave.play();
 

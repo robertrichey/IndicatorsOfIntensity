@@ -7,6 +7,7 @@ Machine.add(me.dir() + "/Sample.ck");
 Machine.add(me.dir() + "/SampleGrains.ck");
 Machine.add(me.dir() + "/RideData.ck");
 Machine.add(me.dir() + "/ShiftingFMWave.ck");
+Machine.add(me.dir() + "/ShiftingFMWave2.ck");
 Machine.add(me.dir() + "/ShiftingVoice.ck");
 
 // Performance classes (~16 minutes)
