@@ -1,4 +1,6 @@
-public class ShiftingFMWave {
+// Has a lower, more restricted modulator and longer envelope than origonal FMWave
+
+public class ShiftingFMWave3 {
     SampleGrains grains;
     float totalDuration;
     1 => int isOff;
@@ -16,32 +18,32 @@ public class ShiftingFMWave {
         
         // Play sound based on grain for total duration
         for (0 => int i; i < grains.numberOfGrains - 1; i++) {
-            
-            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i])) => 
+            // 36, 94
+            Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 63, 85, grains.cadence[i])) => 
             float startCarFreq;
             
-            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i + 1])) => 
+            Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 63, 85, grains.cadence[i + 1])) => 
             float endCarFreq;
             
-            
-            getTransformation(grains.minSpeed, grains.maxSpeed, 0, 500, grains.speed[i]) => 
+            // 
+            getTransformation(grains.minSpeed, grains.maxSpeed, 40, 200, grains.speed[i]) => 
             float startModFreq;
             
-            getTransformation(grains.minSpeed, grains.maxSpeed, 0, 500, grains.speed[i + 1]) => 
+            getTransformation(grains.minSpeed, grains.maxSpeed, 40, 200, grains.speed[i + 1]) => 
             float endModFreq;
             
-            
-            getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i]) => 
+            // 0.08, 0.15 
+            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.2, 0.4, grains.heartRate[i]) => 
             float startCarGain;
             
-            getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i + 1]) => 
+            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.2, 0.4, grains.heartRate[i + 1]) => 
             float endCarGain;
             
             
-            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0, 10000, grains.heartRate[i]) => 
+            getTransformation(grains.minPower, grains.maxPower, 300, 1200, grains.power[i]) => 
             float startModGain;
             
-            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0, 10000, grains.heartRate[i + 1]) => 
+            getTransformation(grains.minPower, grains.maxPower, 300, 1200, grains.power[i + 1]) => 
             float endModGain;
             
             spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);
@@ -54,23 +56,20 @@ public class ShiftingFMWave {
     }
     <<< "Done" >>>;
     
-    // TODO: document, use isOn bool function
+    // TODO: document, use isOn bool function, perform subtraction in MinMaxMIDI?
     fun void turnOn(int a, int b, float sampleRate, float p) {
-        <<< 6666666 >>>;
-        (a - b) * sampleRate => float ringTime;
+        // Random function adjusts total lengthff
+        (a - b) * sampleRate * Math.random2f(0.8, 1.2) => float ringTime;
         p => pan.pan;
-
+        
         0 => isOff;
-        ringTime * 0.005::ms => env.duration;
+        ringTime * 0.2::ms => env.duration;
         env.keyOn();
         env.duration() => now;
-
-        ringTime * 0.995::ms => env.duration;
+        
+        ringTime * 0.8::ms => env.duration;
         env.keyOff();
-
         env.duration() => now;
-                <<< 7777777 >>>;
-
         1 => isOff;
     }
     
