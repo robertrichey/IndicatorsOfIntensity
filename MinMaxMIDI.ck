@@ -117,7 +117,7 @@ totalDuration / numberOfSamples => float sampleRate;
 
 // Create and launch FM waves in background
 
-ShiftingFMWave3 wave;
+ShiftingFMWave wave;
 data.getGrains(5) @=> wave.grains;
 totalDuration => wave.totalDuration;
 spork ~ wave.play();
@@ -232,18 +232,22 @@ fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
         
         // fade fm wave in and out, 55% chance to play
         if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
-            <<< "1010101010" >>>;
             //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
             //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
-            spork ~ wave.turnOn(i, lastDrum, sampleRate, pan[which].pan());
-            Math.random2f(1.0, 3.0)::second => now;
+            Event e;
+            Event e2;
+            (i-lastDrum) * sampleRate => float ringTime; // elapsed time between previous two drum hits
+            
+            spork ~ wave.turnOn(ringTime, pan[which].pan(), e);
+            
+            //Math.random2f(1.0, 3.0)::second => now;
             
             //spork ~ wave2.turnOn(i, lastDrum, sampleRate, pan[which].pan() * -1);
-            Math.random2f(1.0, 3.0)::second => now;
+            //Math.random2f(1.0, 3.0)::second => now;
             
             //spork ~ wave3.turnOn(i, lastDrum, sampleRate, pan[which].pan() * -1);
-            ((i - lastDrum) * sampleRate + 8000)::ms => now;
-            <<< 99999999 >>>;
+            //((i - lastDrum) * sampleRate + 8000)::ms => now;
+            e => now;
         }
         Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
         0 => voices[which]; 
@@ -256,6 +260,12 @@ fun void setDrumGain(SndBuf2 buff[]) {
     for (0 => int i; i < buff.size(); i++) {
         Math.random2f(2.0, 3.0) => buff[i].gain;
     }
+}
+
+fun void playWave(ShiftingFMWave w) {
+    Event e;
+    //w.turnOn();
+    e => now;
 }
 
 fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {

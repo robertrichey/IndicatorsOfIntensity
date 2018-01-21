@@ -55,9 +55,7 @@ public class ShiftingFMWave {
     <<< "Done" >>>;
     
     // TODO: document, use isOn bool function
-    fun void turnOn(int a, int b, float sampleRate, float p) {
-        <<< 6666666 >>>;
-        (a - b) * sampleRate => float ringTime;
+    fun void turnOn(float ringTime, float p, Event e) {
         p => pan.pan;
 
         0 => isOff;
@@ -69,9 +67,9 @@ public class ShiftingFMWave {
         env.keyOff();
 
         env.duration() => now;
-                <<< 7777777 >>>;
-
         1 => isOff;
+        
+        e.signal();
     }
     
     /** 
