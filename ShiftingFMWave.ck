@@ -7,52 +7,13 @@ public class ShiftingFMWave {
     
     // PATCH
     SinOsc modulator => TriOsc carrier => Envelope env => Pan2 pan => dac;
-    
+
     // Tell the oscillator to interpret input as frequency modulation
     2 => carrier.sync;
         
     fun void play() {
-        totalDuration / grains.numberOfGrains => float shiftDur;
-        
-        // Play sound based on grain for total duration
-        for (0 => int i; i < grains.numberOfGrains - 1; i++) {
-            
-            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i])) => 
-            float startCarFreq;
-            
-            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i + 1])) => 
-            float endCarFreq;
-            
-            
-            getTransformation(grains.minSpeed, grains.maxSpeed, 0, 500, grains.speed[i]) => 
-            float startModFreq;
-            
-            getTransformation(grains.minSpeed, grains.maxSpeed, 0, 500, grains.speed[i + 1]) => 
-            float endModFreq;
-            
-            
-            getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i]) => 
-            float startCarGain;
-            
-            getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i + 1]) => 
-            float endCarGain;
-            
-            
-            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0, 10000, grains.heartRate[i]) => 
-            float startModGain;
-            
-            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0, 10000, grains.heartRate[i + 1]) => 
-            float endModGain;
-            
-            spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);
-            spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
-            spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
-            spork ~ shiftModGain(startModGain, endModGain, shiftDur);
-
-            shiftDur::ms => now;
-        }
+        // implement in subclass
     }
-    <<< "Done" >>>;
     
     // TODO: document, use isOn bool function
     fun void turnOn(float ringTime, float p, Event e) {
@@ -73,10 +34,10 @@ public class ShiftingFMWave {
     }
     
     /** 
-    * Linear transformation:
-    * For a given value between [a, b], return corresponding value between [c, d]
-    * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
-    */
+     * Linear transformation:
+     * For a given value between [a, b], return corresponding value between [c, d]
+     * source: https://stackoverflow.com/questions/345187/math-mapping-numbers
+     */
     fun float getTransformation(float a, float b, float c, float d, float x) {
         return (x - a) / (b - a) * (d - c) + c;
     }
@@ -133,6 +94,9 @@ public class ShiftingFMWave {
         finish => modulator.gain;
     }
     
+    /**
+     * Continually pans wave back and forth across stereo field
+     */
     fun void panShift() {
         while (true) {
             if (pan.pan() > 0) {
@@ -144,6 +108,9 @@ public class ShiftingFMWave {
         }
     }
     
+    /**
+     * Gradually pan left
+     */
     fun void panLeft() {
         while (pan.pan() > -0.9) {
             pan.pan() - 0.005 => pan.pan;
@@ -152,6 +119,9 @@ public class ShiftingFMWave {
         }
     }
     
+    /**
+     * Gradually pan right
+     */
     fun void panRight() {
         while (pan.pan() < 0.9) {
             pan.pan() + 0.005 => pan.pan;
@@ -160,6 +130,9 @@ public class ShiftingFMWave {
         }
     }
     
+    /**
+     * Return current pan setting
+     */
     fun float getPan() {
         return pan.pan();
     }
