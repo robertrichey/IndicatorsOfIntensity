@@ -57,9 +57,9 @@ public class ShiftingFMWave2 {
     <<< "Done" >>>;
     
     // TODO: document, use isOn bool function, perform subtraction in MinMaxMIDI?
-    fun void turnOn(int a, int b, float sampleRate, float p) {
-        // Random function adjusts total lengthff
-        (a - b) * sampleRate * Math.random2f(0.8, 1.2) => float ringTime;
+    fun void turnOn(float ringTime, float p, Event e) {
+        // Random function adjusts total length
+        Math.random2f(0.8, 1.2) *=> ringTime;
         p => pan.pan;
         
         0 => isOff;
@@ -71,6 +71,8 @@ public class ShiftingFMWave2 {
         env.keyOff();
         env.duration() => now;
         1 => isOff;
+        
+        e.signal();
     }
     
     /** 
@@ -159,5 +161,9 @@ public class ShiftingFMWave2 {
             15::ms => now;
             //<<< pan.pan() >>>;
         }
+    }
+    
+    fun float getPan() {
+        return pan.pan();
     }
 }

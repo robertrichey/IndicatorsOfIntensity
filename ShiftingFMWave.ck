@@ -159,4 +159,8 @@ public class ShiftingFMWave {
             //<<< pan.pan() >>>;
         }
     }
+    
+    fun float getPan() {
+        return pan.pan();
+    }
 }
