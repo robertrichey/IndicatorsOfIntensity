@@ -42,9 +42,12 @@ public class ShiftingVoice {
     
     spork ~ shift();
     spork ~ panShift();
-    spork ~ fragmentVoice();
+    // spork ~ fragmentVoice();
     
     1 => int isOff;
+    
+    // TODO: remove if unused
+    envFrag.keyOn();
     
     fun void play() {
         0 => isOff;
