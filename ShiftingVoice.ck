@@ -1,6 +1,6 @@
 public class ShiftingVoice {
     // our patch - feed1Gainforward part
-    SndBuf2 buff => Gain dryGain => Envelope envMain => Envelope envFrag => Pan2 pan => dac;
+    SndBuf2 buff => Gain dryGain => Envelope envMain => Gain master => Envelope envFrag => Pan2 pan => dac;
     
     buff => Gain combGain;
     
@@ -12,9 +12,7 @@ public class ShiftingVoice {
     d1 => Gain d1Gain => d1;
     d2 => Gain d2Gain => d2;
     d3 => Gain d3Gain => d3;
-    
-    // TODO: necessary?
-    0.99 => buff.rate;
+  
     
     // Load voice samples into array
     string filename[23];
@@ -30,16 +28,21 @@ public class ShiftingVoice {
     960000 => float totalDuration;
     totalDuration / oscGrains.numberOfGrains => float shiftDur;
     
-    
+        
     // set parameters
     2 => float x;
     Math.random2(1, 12) => int y;
     Math.random2(1, 12) => int z;
     
+    0 => master.gain;
     0.75 => combGain.gain;
     0.5 => dryGain.gain;
     0.95 => d1Gain.gain => d2Gain.gain => d3Gain.gain;
     
+    
+    // spork supporting functions
+    
+    spork ~ shiftGainUp();
     spork ~ shift();
     spork ~ panShift();
     // spork ~ fragmentVoice();
@@ -78,6 +81,17 @@ public class ShiftingVoice {
         //0 => buff.pos;
         //Math.random2f(1, 12) => x;
         //<<< x >>>;
+    }
+    
+    fun void shiftGainUp() {
+        1.2 => float maxGain;
+        maxGain / totalDuration => float gainIncrement;
+        
+        while (master.gain() < maxGain) {
+            gainIncrement + master.gain() => master.gain;
+            // <<< master.gain() >>>;
+            1::ms => now;
+        }
     }
     
     fun void panShift() {
