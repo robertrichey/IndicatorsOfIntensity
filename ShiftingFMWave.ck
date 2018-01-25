@@ -10,12 +10,18 @@ public class ShiftingFMWave {
 
     // Tell the oscillator to interpret input as frequency modulation
     2 => carrier.sync;
-        
+    
+    /**
+     * Sets a waveform into a state where it can be turned on and off
+     */
     fun void play() {
         // implement in subclass
     }
     
-    // TODO: document, use isOn bool function
+    /**
+     * Triggers the waveform to be audible by keying on the envelope 
+     * and sending an event signal after ringTime has concluded
+     */
     fun void turnOn(float ringTime, float p, Event e) {
         p => pan.pan;
 
@@ -42,6 +48,9 @@ public class ShiftingFMWave {
         return (x - a) / (b - a) * (d - c) + c;
     }
     
+    /**
+     * Gradually shifts the frequency of an oscillator over a given duration 
+     */
     fun void shiftCarPitch(float start, float finish, float duration) {
         finish - start => float diff;
         diff / duration => float grain;
@@ -55,6 +64,9 @@ public class ShiftingFMWave {
         finish => carrier.freq;
     }
     
+    /**
+     * Gradually shifts the gain of an oscillator over a given duration 
+     */
     fun void shiftCarGain(float start, float finish, float duration) {
         finish - start => float diff;
         diff / duration => float grain;
@@ -68,6 +80,9 @@ public class ShiftingFMWave {
         finish => carrier.gain;
     }
     
+    /**
+     * Gradually shifts the frequency of an oscillator over a given duration 
+     */
     fun void shiftModPitch(float start, float finish, float duration) {
         finish - start => float diff;
         diff / duration => float grain;
@@ -81,6 +96,9 @@ public class ShiftingFMWave {
         finish => modulator.freq;
     }
     
+    /**
+     * Gradually shifts the gain of an oscillator over a given duration 
+     */
     fun void shiftModGain(float start, float finish, float duration) {
         finish - start => float diff;
         diff / duration => float grain;

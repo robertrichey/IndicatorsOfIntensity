@@ -5,8 +5,11 @@ SndBuf2 buff[numVoices];
 Envelope env[numVoices];
 NRev rev[numVoices];
 Pan2 pan[numVoices]; 
+Envelope masterEnv;
 
 // Delay del[numVoices];
+
+1 => int isOff;
 
 string filename[23];
 
@@ -16,10 +19,12 @@ for (0 => int i; i < filename.size(); i++) {
 }
 
 for (0 => int i; i < buff.size(); i++) {
-    buff[i] => env[i] => rev[i] => pan[i] => dac;
+    buff[i] => masterEnv => env[i] => rev[i] => pan[i] => dac;
     //buff[i] => del[i] => del[i] => rev[i];
     //2000::ms => del[i].max;
 }
+
+masterEnv.keyOn();
 
 now + 10::second => time later;
 
@@ -51,7 +56,7 @@ fun void play() {
     }
     */
     me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
-    Math.random2f(0.5, 1.5) => buff[which].gain;
+    Math.random2f(0.5, 1.2) => buff[which].gain;
     20::ms => env[which].duration;
     Math.random2f(-0.8, 0.8) => pan[which].pan;
     Math.random2(0, buff[which].samples()-1) => buff[which].pos;

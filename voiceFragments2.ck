@@ -69,7 +69,7 @@ fun void play() {
         
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
         1000::ms => env[which].duration;
-        Math.random2f(-0.8, 0.8) => pan[which].pan;
+        //Math.random2f(-0.8, 0.8) => pan[which].pan;
         
         Math.random2(2000, 5000) => int len;
         Math.random2(0, buff[which].samples() - 0) => buff[which].pos;
