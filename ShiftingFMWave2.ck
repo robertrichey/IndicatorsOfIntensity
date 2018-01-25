@@ -1,6 +1,10 @@
-// Has a lower, more restricted modulator and longer envelope than origonal FMWave
+// TODO: summarize class
 
 public class ShiftingFMWave2 extends ShiftingFMWave {
+    
+    /**
+     * Use cycling data to transform an FM wave over totalDuration milliseconds
+     */
     fun void play() {
         totalDuration / grains.numberOfGrains => float shiftDur;
         

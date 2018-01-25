@@ -1,4 +1,10 @@
+// TODO: summarize class
+
 public class ShiftingFMWave1 extends ShiftingFMWave {
+    
+    /**
+     * Use cycling data to transform an FM wave over totalDuration milliseconds
+     */
     fun void play() {
         totalDuration / grains.numberOfGrains => float shiftDur;
         

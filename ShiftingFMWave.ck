@@ -1,3 +1,5 @@
+// TODO: summarize class
+
 public class ShiftingFMWave {
     SampleGrains grains;
     float totalDuration;
