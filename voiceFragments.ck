@@ -10,7 +10,9 @@ public class VoiceFragments {
     NRev rev[numVoices];
     Pan2 pan[numVoices]; 
     Envelope masterEnv;
+    Gain masterGain;
     
+    0.2 => masterGain.gain;
     // Delay del[numVoices];
     
     1 => int isOff;
@@ -23,19 +25,28 @@ public class VoiceFragments {
     }
     
     for (0 => int i; i < buff.size(); i++) {
-        buff[i] => masterEnv => env[i] => rev[i] => pan[i] => dac;
+        buff[i] => masterEnv => env[i] => rev[i] => masterGain => pan[i] => dac;
         //buff[i] => del[i] => del[i] => rev[i];
         //2000::ms => del[i].max;
     }
-      
-    // TODO: necessary?
-    now + 10::second => time later;
+    
+    
+    masterEnv.keyOn(); // DUR???
+    
+    // Gradually turned down gain
+    spork ~ turnDown();
+    
     // now < later
-    while (true) {
-        spork ~ play();
-        Math.random2(500, 1000)::ms => now;
+    fun void turnOn() {
+        // TODO: necessary?
+        now + 10::second => time later;
+        
+        while (now < later) {
+            spork ~ play();
+            Math.random2(500, 1000)::ms => now;
+        }
+        4000::ms => now;
     }
-    4000::ms => now;
     
     fun void play() {
         getVoice2(buffVoices) => int which;
@@ -85,6 +96,18 @@ public class VoiceFragments {
         }
     }
     
+    fun void turnDown() {
+        96000 => int totalDuration;
+        masterGain.gain() / totalDuration => float gainDecrement;
+
+        
+        for (0 => int i; i < totalDuration; i++) {
+            masterGain.gain() - gainDecrement => masterGain.gain;
+            1::ms => now;
+        }
+    }
+    
+    // TODO: remove?
     fun void turnOn(float ringTime, Event e) {
         //p => pan.pan;
         
@@ -94,7 +117,7 @@ public class VoiceFragments {
         
         10::second => now;
 
-        env.duration() => now;
+        masterEnv.duration() => now;
         1 => isOff;
         
         e.signal();
