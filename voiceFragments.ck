@@ -12,7 +12,7 @@ public class VoiceFragments {
     Envelope masterEnv;
     Gain masterGain;
     
-    0.2 => masterGain.gain;
+    0.35 => masterGain.gain;
     // Delay del[numVoices];
     
     1 => int isOff;
@@ -31,7 +31,7 @@ public class VoiceFragments {
     }
     
     
-    masterEnv.keyOn(); // DUR???
+
     
     // Gradually turned down gain
     spork ~ turnDown();
@@ -39,13 +39,26 @@ public class VoiceFragments {
     // now < later
     fun void turnOn() {
         // TODO: necessary?
-        now + 10::second => time later;
+        <<< "ON!" >>>;
+        Math.random2(5, 10)::second => dur length;
+        spork ~ envelopeOn(length);
+        
+        now + length => time later;
         
         while (now < later) {
             spork ~ play();
             Math.random2(500, 1000)::ms => now;
         }
-        4000::ms => now;
+        1000::ms => now;
+    }
+    
+    fun void envelopeOn(dur length) {
+        length * 0.25 => masterEnv.duration;
+        
+        masterEnv.keyOn();
+        length * 0.75 => now;
+        masterEnv.keyOff();
+        masterEnv.duration() => now;
     }
     
     fun void play() {
@@ -74,7 +87,6 @@ public class VoiceFragments {
         20::ms => env[which].duration;
         Math.random2f(-0.8, 0.8) => pan[which].pan;
         Math.random2(0, buff[which].samples()-1) => buff[which].pos;
-        <<< buff[which].samples() >>>;
         
         env[which].keyOn();
         len::ms => now;
@@ -97,7 +109,7 @@ public class VoiceFragments {
     }
     
     fun void turnDown() {
-        96000 => int totalDuration;
+        960000 => int totalDuration;
         masterGain.gain() / totalDuration => float gainDecrement;
 
         

@@ -9,6 +9,7 @@ public class PowerZones {
     samples.size() => int numberOfSamples;
     
     ShiftingVoice voice;
+    VoiceFragments fragments;
     
     // Set length of piece
     float totalDuration;
@@ -40,6 +41,7 @@ public class PowerZones {
                 // 300 prevents voice from entering too early, ignores first 300 samples
                 if (currentZone != previousZone) {
                     if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
+                        spork ~ fragments.turnOn();
                         spork ~ voice.play();
                     }
                     currentZone => previousZone;

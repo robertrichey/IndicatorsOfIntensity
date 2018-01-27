@@ -53,6 +53,7 @@ public class ShiftingVoice {
     envFrag.keyOn();
     
     fun void play() {
+        <<< "VOICE ON" >>>;
         0 => isOff;
         
         Math.random2f(-1.0, 1.0) => pan.pan;
@@ -84,7 +85,7 @@ public class ShiftingVoice {
     }
     
     fun void shiftGainUp() {
-        1.2 => float maxGain;
+        1.4 => float maxGain;
         maxGain / totalDuration => float gainIncrement;
         
         while (master.gain() < maxGain) {
