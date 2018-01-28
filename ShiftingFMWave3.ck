@@ -25,10 +25,10 @@ public class ShiftingFMWave3 extends ShiftingFMWave {
             float endModFreq;
             
             // 0.08, 0.15 
-            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.2, 0.4, grains.heartRate[i]) => 
+            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.1, 0.2, grains.heartRate[i]) => 
             float startCarGain;
             
-            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.2, 0.4, grains.heartRate[i + 1]) => 
+            getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.1, 0.2, grains.heartRate[i + 1]) => 
             float endCarGain;
             
             

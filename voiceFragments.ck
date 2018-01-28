@@ -12,7 +12,7 @@ public class VoiceFragments {
     Envelope masterEnv;
     Gain masterGain;
     
-    0.35 => masterGain.gain;
+    0.32 => masterGain.gain;
     // Delay del[numVoices];
     
     1 => int isOff;
@@ -85,7 +85,7 @@ public class VoiceFragments {
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
         Math.random2f(0.5, 1.2) => buff[which].gain;
         20::ms => env[which].duration;
-        Math.random2f(-0.8, 0.8) => pan[which].pan;
+        Math.random2f(-0.9, 0.9) => pan[which].pan;
         Math.random2(0, buff[which].samples()-1) => buff[which].pos;
         
         env[which].keyOn();

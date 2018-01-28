@@ -1,5 +1,5 @@
 /**
- * Plays a ShiftingVoice object when the rider changes power zones
+ * Plays a ShiftingVoice and VVoiceFragment objects when the rider changes power zones
  */
 
 public class PowerZones {
