@@ -52,13 +52,17 @@ public class ShiftingVoice {
     // TODO: remove if unused
     envFrag.keyOn();
     
+    fun dur setVoice() {
+        me.dir() + filename[Math.random2(0, filename.size()-1)] => buff.read;
+        return buff.length();
+    }
+    
     fun void play() {
         <<< "VOICE ON" >>>;
         0 => isOff;
         
         Math.random2f(-1.0, 1.0) => pan.pan;
         // <<< pan.pan(), "pan" >>>;
-        me.dir() + filename[Math.random2(0, filename.size()-1)] => buff.read;
         
         // set parameters
         2 => float x;
@@ -86,12 +90,12 @@ public class ShiftingVoice {
     
     fun void shiftGainUp() {
         1.4 => float maxGain;
-        maxGain / totalDuration => float gainIncrement;
+        maxGain / (totalDuration / 100)  => float gainIncrement;
         
         while (master.gain() < maxGain) {
             gainIncrement + master.gain() => master.gain;
             // <<< master.gain() >>>;
-            1::ms => now;
+            100::ms => now;
         }
     }
     

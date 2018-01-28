@@ -41,7 +41,7 @@ public class PowerZones {
                 // 300 prevents voice from entering too early, ignores first 300 samples
                 if (currentZone != previousZone) {
                     if (Math.randomf() > 0.2 && voice.isOff && i > 300) {
-                        spork ~ fragments.turnOn();
+                        spork ~ fragments.turnOn(voice.setVoice());
                         spork ~ voice.play();
                     }
                     currentZone => previousZone;

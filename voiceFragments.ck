@@ -37,10 +37,10 @@ public class VoiceFragments {
     spork ~ turnDown();
     
     // now < later
-    fun void turnOn() {
+    fun void turnOn(dur length) {
         // TODO: necessary?
         <<< "ON!" >>>;
-        Math.random2(5, 10)::second => dur length;
+        //Math.random2(5, 10)::second => dur length;
         spork ~ envelopeOn(length);
         
         now + length => time later;
@@ -109,13 +109,13 @@ public class VoiceFragments {
     }
     
     fun void turnDown() {
-        960000 => int totalDuration;
+        9600 => int totalDuration;
         masterGain.gain() / totalDuration => float gainDecrement;
 
         
         for (0 => int i; i < totalDuration; i++) {
             masterGain.gain() - gainDecrement => masterGain.gain;
-            1::ms => now;
+            100::ms => now;
         }
     }
     
