@@ -1,6 +1,6 @@
 /**
-* TODO: description
-*/
+ * Creates an object that provides access to the data recorded during a given ride
+ */
 
 public class RideData {    
     FileIO file;
@@ -55,7 +55,6 @@ public class RideData {
     samples[0].speed.current => float totalSpeed;
     samples[0].heartRate.current => float totalHeartRate;
     samples[0].cadence.current => float totalCadence;
-    0 => int sampleCount;
     
     samples[0].power.current => int minPower;
     samples[0].power.current => int maxPower;
@@ -72,7 +71,6 @@ public class RideData {
     
     // TODO unnecessary assignments with min function?
     for (1 => int i; i < numberOfSamples; i++) {    
-        sampleCount++;
         
         // Power
         Std.ftoi(Math.min(minPower, samples[i].power.current)) => minPower;
@@ -81,8 +79,7 @@ public class RideData {
         maxPower => samples[i].power.max;
         
         samples[i].power.current +=> totalPower;
-        Std.ftoi(getAverage(totalPower, sampleCount)) => 
-        samples[i].power.average;
+        Std.ftoi(getAverage(totalPower, i)) => samples[i].power.average;
         
         // Speed
         Math.min(minSpeed, samples[i].speed.current) => minSpeed;
@@ -91,8 +88,7 @@ public class RideData {
         maxSpeed => samples[i].speed.max;
         
         samples[i].speed.current +=> totalSpeed;
-        getAverage(totalSpeed, sampleCount) => 
-        samples[i].speed.average;
+        getAverage(totalSpeed, i) => samples[i].speed.average;
         
         // Heart rate
         Std.ftoi(Math.min(minHeartRate, samples[i].heartRate.current)) => minHeartRate;
@@ -101,8 +97,7 @@ public class RideData {
         maxHeartRate => samples[i].heartRate.max;
         
         samples[i].heartRate.current +=> totalHeartRate;
-        getAverage(totalHeartRate, sampleCount) => 
-        samples[i].heartRate.average;
+        getAverage(totalHeartRate, i) => samples[i].heartRate.average;
         
         
         // Cadence
@@ -112,21 +107,26 @@ public class RideData {
         maxCadence => samples[i].cadence.max;
         
         samples[i].cadence.current +=> totalCadence;
-        Std.ftoi(getAverage(totalCadence, sampleCount)) => 
-        samples[i].cadence.average;
+        Std.ftoi(getAverage(totalCadence, i)) => samples[i].cadence.average;
     }
     
-    <<< "Done" >>>;
     
+    /**
+     *  Returns an array of Samples collected from the data set
+     */
     fun Sample[] getSamples() {
         return samples;
     }
-        
+    
+    /**
+     * Returns a SampleGrains object based on the desired grain size
+     */    
     fun SampleGrains getGrains(int grainSize) {
-        // Round down to nearest grain
+        // Round down to nearest multiple of grainSize
         numberOfSamples - (numberOfSamples % grainSize) => int roundedSamples;
         roundedSamples / grainSize => int arraySize;
 
+        // Create arrays to hold the averages over grainSize samples
         float powerAverages[arraySize];
         0.0 => float power;
         
@@ -143,6 +143,7 @@ public class RideData {
         0 => int index;
         0 => int count;
         
+        // Calculate averages and populate arrays
         for (0 => int i; i < roundedSamples; i++) {
             count++; 
             
@@ -169,6 +170,7 @@ public class RideData {
             }
         }
         
+        // Create SampleGrains object, assign values, and return it
         SampleGrains grains;
         
         arraySize => grains.numberOfGrains;
@@ -194,10 +196,16 @@ public class RideData {
         return grains;
     }
     
+    /**
+     * Returns an average based on sum and numItems
+     */
     fun float getAverage(float sum, int numItems) {
         return sum / numItems;
     }
     
+    /**
+     * Returns the minimum value in an array
+     */
     fun float getMin(float arr[]) {
         arr[0] => float min;
         
@@ -208,7 +216,10 @@ public class RideData {
         }
         return min;
     }
-    
+ 
+    /**
+     * Returns the maximum value in an array
+     */    
     fun float getMax(float arr[]) {
         arr[0] => float max;
         
