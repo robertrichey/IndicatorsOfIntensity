@@ -1,3 +1,7 @@
+/**
+ * Creates an object containing minimums, maximums, and an array of averages over a given number of samples
+ */
+
 public class SampleGrains {
     int numberOfGrains;
     
