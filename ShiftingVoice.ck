@@ -37,8 +37,8 @@ public class ShiftingVoice {
         
     // Set two delay lines to be a perfect fourth apart and the third assigned a random interval
     2 => float d1Delay;
-    7 => int d2Delay;
-    Math.random2(1, 12) => int d3Delay;
+    7 => float d2Delay;
+    Math.random2(1, 12) => float d3Delay;
     
     // Set gain parameters
     0.0 => master.gain;
@@ -207,7 +207,6 @@ public class ShiftingVoice {
             
             1::ms => now;
         }
-        finish::ms => d1.delay;
         
         // Ensure parameters end at finish
         finish::ms => d1.delay;
