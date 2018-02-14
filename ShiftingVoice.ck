@@ -1,3 +1,7 @@
+/**
+ * Plays voice recordings with a comb filters whose values change based current cycling parameters
+ */
+
 public class ShiftingVoice {
     // our patch - feed1Gainforward part
     SndBuf2 buff => Gain dryGain => Envelope envMain => Gain master => Envelope envFrag => Pan2 pan => dac;
@@ -22,59 +26,67 @@ public class ShiftingVoice {
         "/voice/" + Std.itoa(i) + ".wav" => filename[i];
     }
     
+    // TODO: remove and access from one place
     RideData data;
-    data.getGrains(8) @=> SampleGrains oscGrains;
+    data.getGrains(8) @=> SampleGrains grains;
     
+    // TODO: remove and access from one place
     960000 => float totalDuration;
-    totalDuration / oscGrains.numberOfGrains => float shiftDur;
+    totalDuration / grains.numberOfGrains => float shiftDur;
     
         
-    // set parameters
-    2 => float x;
-    Math.random2(1, 12) => int y;
-    Math.random2(1, 12) => int z;
+    // Set two delay lines to be a perfect fourth apart and the third assigned a random interval
+    2 => float d1Delay;
+    7 => int d2Delay;
+    Math.random2(1, 12) => int d3Delay;
     
-    0 => master.gain;
+    // Set gain parameters
+    0.0 => master.gain;
     0.75 => combGain.gain;
     0.5 => dryGain.gain;
     0.95 => d1Gain.gain => d2Gain.gain => d3Gain.gain;
     
     
     // spork supporting functions
-    
     spork ~ shiftGainUp();
     spork ~ shift();
     spork ~ panShift();
     // spork ~ fragmentVoice();
     
+    // Bool for detecting whether a sound file is currently playing
     1 => int isOff;
     
     // TODO: remove if unused
     envFrag.keyOn();
     
+    /**
+     * Select a voice recording for playback and return its length
+     */
     fun dur setVoice() {
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff.read;
         return buff.length();
     }
     
+    /**
+     * Turns on envelope and plays selected sound file
+     */
     fun void play() {
-        <<< "VOICE ON" >>>;
         0 => isOff;
         
-        Math.random2f(-1.0, 1.0) => pan.pan;
-        // <<< pan.pan(), "pan" >>>;
+        // Set parameters        
+        Math.random2f(-1.0, 1.0) => pan.pan; // TODO: Necessary when panShift is always running in background? 
         
-        // set parameters
-        2 => float x;
-        7 => y;
-        Math.random2(1, 12) => z;
+        Math.random2(1, 12) => d3Delay;
         
-        x::ms => d1.delay;
-        raiseByHalfSteps(x, y)::ms => d2.delay;
-        raiseByHalfSteps(x, z)::ms => d3.delay;
+        // TODO: Necessary when shift is always running in background? 
+        d1Delay::ms => d1.delay;
+        raiseByHalfSteps(d1Delay, d2Delay)::ms => d2.delay;
+        raiseByHalfSteps(d1Delay, d3Delay)::ms => d3.delay;
         
         //buff.length() * 0.25 => envMain.duration;
         3000::ms => envMain.duration;
+        
+        // Make sound by keying envelope on and off
         envMain.keyOn();
         
         buff.length() - envMain.duration() => now;
@@ -83,11 +95,11 @@ public class ShiftingVoice {
         envMain.duration() => now;
         
         1 => isOff;
-        //0 => buff.pos;
-        //Math.random2f(1, 12) => x;
-        //<<< x >>>;
     }
     
+    /**
+     * Gradually increases gain over totalDuration
+     */
     fun void shiftGainUp() {
         1.4 => float maxGain;
         maxGain / (totalDuration / 100)  => float gainIncrement;
@@ -99,6 +111,9 @@ public class ShiftingVoice {
         }
     }
     
+    /**
+     * Continually pans wave back and forth across stereo field
+     */
     fun void panShift() {
         while (true) {
             if (pan.pan() > 0) {
@@ -109,7 +124,10 @@ public class ShiftingVoice {
             }
         }
     }
-    
+
+    /**
+     * Gradually pan left
+     */    
     fun void panLeft() {
         while (pan.pan() > -0.95) {
             pan.pan() - 0.005 => pan.pan;
@@ -117,7 +135,10 @@ public class ShiftingVoice {
             //<<< pan.pan() >>>;
         }
     }
-    
+
+    /**
+     * Gradually pan right
+     */    
     fun void panRight() {
         while (pan.pan() < 0.95) {
             pan.pan() + 0.005 => pan.pan;
@@ -126,13 +147,16 @@ public class ShiftingVoice {
         }
     }
     
+    /**
+     * Shifts the duration of delay lines based on current power output in an array of grains
+     */
     fun void shift() {
         // Play sound based on grain for total duration
-        for (0 => int i; i < oscGrains.numberOfGrains - 1; i++) {       
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 3, 10, oscGrains.power[i])) => 
+        for (0 => int i; i < grains.numberOfGrains - 1; i++) {       
+            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i])) => 
             float startDelay;
             
-            Std.mtof(getTransformation(oscGrains.minPower, oscGrains.maxPower, 3, 10, oscGrains.power[i + 1])) => 
+            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i + 1])) => 
             float endDelay;
             
             spork ~ shiftDelay(startDelay, endDelay, shiftDur);
@@ -141,6 +165,7 @@ public class ShiftingVoice {
         }
     }
     
+    // TODO: remove?
     fun void fragmentVoice() {
         20::ms => envFrag.duration;
         
@@ -153,41 +178,46 @@ public class ShiftingVoice {
         }
     }
     
+    // TODO: move to an area where it can be accessed by all necessary classes?
     fun float getTransformation(float a, float b, float c, float d, float x) {
         return (x - a) / (b - a) * (d - c) + c;
     }
     
+    /**
+     * Shifts delay lines in sync with one another over a given duration. 
+     * start and finish represent the delay duration of d1
+     */
     fun void shiftDelay(float start, float finish, float duration) {
         finish - start => float diff;
         diff / duration => float grain;
         start => float current;
         
-        // set parameters
+        // Ensure parameters begin at start
         current::ms => d1.delay;
-        raiseByHalfSteps(current, y)::ms => d2.delay;
-        raiseByHalfSteps(current, z)::ms => d3.delay;
+        raiseByHalfSteps(current, d2Delay)::ms => d2.delay;
+        raiseByHalfSteps(current, d3Delay)::ms => d3.delay;
         
+        // Gradually shift delay lines
         for (0 => int i; i < duration; i++) {
             grain +=> current;
             
-            // set parameters
             current::ms => d1.delay;
-            raiseByHalfSteps(current, y)::ms => d2.delay;
-            raiseByHalfSteps(current, z)::ms => d3.delay;
+            raiseByHalfSteps(current, d2Delay)::ms => d2.delay;
+            raiseByHalfSteps(current, d3Delay)::ms => d3.delay;
             
             1::ms => now;
         }
         finish::ms => d1.delay;
         
-        // set parameters
+        // Ensure parameters end at finish
         finish::ms => d1.delay;
-        raiseByHalfSteps(current, y)::ms => d2.delay;
-        raiseByHalfSteps(current, z)::ms => d3.delay;
+        raiseByHalfSteps(current, d2Delay)::ms => d2.delay;
+        raiseByHalfSteps(current, d3Delay)::ms => d3.delay;
     } 
     
     /**
-    * Raises a float x by y equally tempered half steps
-    */
+     * Raises a float x by y equally tempered half steps
+     */
     fun float raiseByHalfSteps(float x, float y) {
         return x * Math.pow(Math.pow(2, 1/12.0), y);
     }
