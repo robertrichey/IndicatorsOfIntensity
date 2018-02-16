@@ -39,7 +39,6 @@ public class VoiceFragments {
     // now < later
     fun void turnOn(dur length) {
         // TODO: necessary?
-        <<< "ON!" >>>;
         //Math.random2(5, 10)::second => dur length;
         spork ~ envelopeOn(length);
         
@@ -105,6 +104,7 @@ public class VoiceFragments {
                 1 => voices[which];
                 return which;
             }
+            5::ms => now;
         }
     }
     

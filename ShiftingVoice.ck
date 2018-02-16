@@ -30,10 +30,10 @@ public class ShiftingVoice {
     RideData data;
     data.getGrains(8) @=> SampleGrains grains;
     
+    
     // TODO: remove and access from one place
     960000 => float totalDuration;
-    totalDuration / grains.numberOfGrains => float shiftDur;
-    
+        
         
     // Set two delay lines to be a perfect fourth apart and the third assigned a random interval
     2 => float d1Delay;
@@ -83,7 +83,6 @@ public class ShiftingVoice {
         raiseByHalfSteps(d1Delay, d2Delay)::ms => d2.delay;
         raiseByHalfSteps(d1Delay, d3Delay)::ms => d3.delay;
         
-        //buff.length() * 0.25 => envMain.duration;
         3000::ms => envMain.duration;
         
         // Make sound by keying envelope on and off
@@ -143,45 +142,29 @@ public class ShiftingVoice {
         while (pan.pan() < 0.95) {
             pan.pan() + 0.005 => pan.pan;
             15::ms => now;
-            //<<< pan.pan() >>>;
         }
     }
     
     /**
      * Shifts the duration of delay lines based on current power output in an array of grains
      */
-    fun void shift() {
-        // Play sound based on grain for total duration
-        for (0 => int i; i < grains.numberOfGrains - 1; i++) {       
-            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i])) => 
-            float startDelay;
-            
-            Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i + 1])) => 
-            float endDelay;
-            
-            spork ~ shiftDelay(startDelay, endDelay, shiftDur);
-            
-            shiftDur::ms => now;
-        }
-    }
-    
-    // TODO: remove?
-    fun void fragmentVoice() {
-        20::ms => envFrag.duration;
-        
-        while (true) {
-            Math.random2(500, 800)::ms => now;
-            
-            envFrag.keyOn();
-            Math.random2(100, 1000)::ms => now;
-            envFrag.keyOff();
-        }
-    }
-    
-    // TODO: move to an area where it can be accessed by all necessary classes?
-    fun float getTransformation(float a, float b, float c, float d, float x) {
-        return (x - a) / (b - a) * (d - c) + c;
-    }
+     fun void shift() {
+         totalDuration / grains.numberOfGrains => float shiftDur;
+
+         // Play sound based on grain for total duration
+         for (0 => int i; i < grains.numberOfGrains - 1; i++) {  
+             if (!isOff) {     
+                 Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i])) => 
+                 float startDelay;
+                 
+                 Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i + 1])) => 
+                 float endDelay;
+                 
+                 spork ~ shiftDelay(startDelay, endDelay, shiftDur);
+             }
+             shiftDur::ms => now;
+         }
+     }
     
     /**
      * Shifts delay lines in sync with one another over a given duration. 
@@ -213,6 +196,24 @@ public class ShiftingVoice {
         raiseByHalfSteps(current, d2Delay)::ms => d2.delay;
         raiseByHalfSteps(current, d3Delay)::ms => d3.delay;
     } 
+    
+    // TODO: move to an area where it can be accessed by all necessary classes?
+    fun float getTransformation(float a, float b, float c, float d, float x) {
+        return (x - a) / (b - a) * (d - c) + c;
+    }
+    
+    // TODO: remove?
+    fun void fragmentVoice() {
+        20::ms => envFrag.duration;
+        
+        while (true) {
+            Math.random2(500, 800)::ms => now;
+            
+            envFrag.keyOn();
+            Math.random2(100, 1000)::ms => now;
+            envFrag.keyOff();
+        }
+    }
     
     /**
      * Raises a float x by y equally tempered half steps
