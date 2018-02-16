@@ -28,6 +28,8 @@ public class VoiceFragments {
         buff[i] => masterEnv => env[i] => rev[i] => masterGain => pan[i] => dac;
         //buff[i] => del[i] => del[i] => rev[i];
         //2000::ms => del[i].max;
+        20::ms => env[i].duration;
+        //Math.random2f(-0.9, 0.9) => pan[i].pan;
     }
     
     
@@ -40,6 +42,10 @@ public class VoiceFragments {
     fun void turnOn(dur length) {
         // TODO: necessary?
         //Math.random2(5, 10)::second => dur length;
+        
+        for (0 => int i; i < numVoices; i++) {
+            Math.random2f(-0.9, 0.9) => pan[i].pan;
+        }
         spork ~ envelopeOn(length);
         
         now + length => time later;
@@ -83,8 +89,8 @@ public class VoiceFragments {
         */
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
         Math.random2f(0.5, 1.2) => buff[which].gain;
-        20::ms => env[which].duration;
-        Math.random2f(-0.9, 0.9) => pan[which].pan;
+        //20::ms => env[which].duration;
+        //Math.random2f(-0.9, 0.9) => pan[which].pan;
         Math.random2(0, buff[which].samples()-1) => buff[which].pos;
         
         env[which].keyOn();
