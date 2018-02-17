@@ -1,11 +1,10 @@
 
-public class VoiceFragments {
+public class VoiceFragments2 {
     8 => int numVoices;
     int buffVoices[numVoices];
     
     SndBuf2 buff[numVoices];
     Envelope env[numVoices];
-    NRev rev[numVoices];
     Pan2 pan[numVoices]; 
     
     Gain combGain[numVoices];
@@ -21,7 +20,8 @@ public class VoiceFragments {
     
     // Sound chain
     for (0 => int i; i < numVoices; i++) {
-        buff[i] => dryGain[i] => env[i] => rev[i] => dac;//pan[i] => dac;
+        // TODO: Use pan?
+        buff[i] => dryGain[i] => env[i] => dac;//pan[i] => dac;
         
         buff[i] => combGain[i];
         
@@ -32,10 +32,12 @@ public class VoiceFragments {
         delay1[i] => delay1Gain[i] => delay1[i];
         delay2[i] => delay2Gain[i] => delay2[i];
         delay3[i] => delay3Gain[i] => delay3[i];
+        
+        1000::ms => env[i].duration;
     }
     
     
-    // Samples
+    // Create array and load samples
     string filename[23];
     
     for (0 => int i; i < filename.size(); i++) {
@@ -60,31 +62,18 @@ public class VoiceFragments {
                 Math.random2f(0.5, 0.9) => dryGain[which].gain;
                 
             }
-            if (Math.randomf() > 0.0) { 
-                //Math.random2f(0.1, 0.8) => rev[which].mix;
-                0 => rev[which].mix;
-                
-            }
-            else {
-                0 => rev[which].mix;
-            }
             
             me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
-            1000::ms => env[which].duration;
             //Math.random2f(-0.8, 0.8) => pan[which].pan;
             
             Math.random2(2000, 5000) => int len;
-            Math.random2(0, buff[which].samples() - 0) => buff[which].pos;
-            <<< buff[which].samples() >>>;
+            Math.random2(0, buff[which].samples()) => buff[which].pos;
             
             env[which].keyOn();
             len::ms => now;
             
             env[which].keyOff();
             env[which].duration() => now;
-            
-            // Let reverb subside
-            2000::ms => now;
             
             0 => buffVoices[which]; 
         }

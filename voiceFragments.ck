@@ -40,11 +40,9 @@ public class VoiceFragments {
      */    
     fun void turnOn(dur length) {
         setPan();
-        
         spork ~ envelopeOn(length);
         
         now + length => time later;
-        
         <<< "VoiceFragment Gain: " masterGain.gain() >>>;
         
         while (now < later) {
