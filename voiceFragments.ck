@@ -43,7 +43,7 @@ public class VoiceFragments {
         spork ~ envelopeOn(length);
         
         now + length => time later;
-        <<< "VoiceFragment Gain: " masterGain.gain() >>>;
+        <<< "VoiceFragment gain: ", masterGain.gain() >>>;
         
         while (now < later) {
             spork ~ play();
