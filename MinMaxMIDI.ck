@@ -116,7 +116,7 @@ totalDuration / numberOfSamples => float sampleRate;
 
 
 // Create and launch FM waves in background
-
+/*
 ShiftingFMWave1 wave;
 data.getGrains(5) @=> wave.grains;
 totalDuration => wave.totalDuration;
@@ -131,7 +131,7 @@ ShiftingFMWave3 wave3;
 data.getGrains(2) @=> wave3.grains;
 totalDuration => wave3.totalDuration;
 spork ~ wave3.play();
-
+*/
 
 // Create and launch voices in background
 
@@ -229,7 +229,7 @@ fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
     if (which > -1) {
         //rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
         0 => buff[which].pos;
-        
+        /*
         // fade fm wave in and out, 55% chance to play
         if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
             //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
@@ -265,6 +265,7 @@ fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
                 0 => wave3isOn;
             }
         }
+        */
         // TODO: accidental copy/paste? Remove?
         Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
         0 => voices[which]; 

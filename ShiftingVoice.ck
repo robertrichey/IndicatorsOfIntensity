@@ -105,7 +105,7 @@ public class ShiftingVoice {
         
         while (master.gain() < maxGain) {
             gainIncrement + master.gain() => master.gain;
-            // <<< master.gain() >>>;
+            //<<< "SVG ", master.gain() >>>;
             100::ms => now;
         }
     }

@@ -1,5 +1,5 @@
 // Simple SinOsc-based carrier and modulator
-SinOsc modulator => SinOsc carrier => dac;
+SinOsc modulator => TriOsc carrier => dac;
 
 // Tell the oscillator to interpret input as frequency modulation
 2 => carrier.sync; 

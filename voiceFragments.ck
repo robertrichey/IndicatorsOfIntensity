@@ -17,7 +17,7 @@ public class VoiceFragments {
     Envelope masterEnv;
     Gain masterGain;
     
-    0.32 => masterGain.gain;
+    0.18 => masterGain.gain;
     1 => int isOff;
     string filename[23];
     
@@ -29,6 +29,7 @@ public class VoiceFragments {
     for (0 => int i; i < buff.size(); i++) {
         buff[i] => masterEnv => env[i] => rev[i] => masterGain => pan[i] => dac;
         20::ms => env[i].duration;
+        //Math.random2f(-0.9, 0.9) => pan[i].pan;
     }
     
        
@@ -43,13 +44,15 @@ public class VoiceFragments {
         spork ~ envelopeOn(length);
         
         now + length => time later;
-        <<< "VoiceFragment gain: ", masterGain.gain() >>>;
+        //<<< "VoiceFragment gain: ", masterGain.gain() >>>;
         
         while (now < later) {
             spork ~ play();
-            Math.random2(500, 1000)::ms => now;
+            Math.random2(500, 1200)::ms => now;
         }
-        1000::ms => now;
+        // Allow sporked shreds to terminate. 
+        // NOTE: duration must consider max possible fragLength in play function
+        2000::ms => now;
     }
     
     /**
@@ -78,6 +81,9 @@ public class VoiceFragments {
      */     
     fun void play() {
         getVoice(buffVoices) => int which;
+        
+        //<<< buffVoices[0], buffVoices[1], buffVoices[2], buffVoices[3], buffVoices[4] >>>;
+        
         int fragLength;
         
         // Set duration and reverb based on chance
@@ -103,6 +109,8 @@ public class VoiceFragments {
         env[which].duration() => now;
         
         0 => buffVoices[which]; 
+        
+        //<<< buffVoices[0], buffVoices[1], buffVoices[2], buffVoices[3], buffVoices[4] >>>;
     }
 
     /**

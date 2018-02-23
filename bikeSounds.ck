@@ -53,7 +53,7 @@ for (0 => int i; i < x; i++) {
 
 fun void play() {
     getVoice(buffVoices) => int which;
-    
+        
     if (which > -1) {
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
         Math.random2f(1.0, 2.5) => buff[which].gain;

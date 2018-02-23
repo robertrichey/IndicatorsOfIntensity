@@ -21,6 +21,7 @@ public class VoiceFragments2 {
     Gain masterGain;
     
     0.0 => masterGain.gain;
+
     1 => int isOff;
     
     // Create array and load samples
@@ -45,8 +46,7 @@ public class VoiceFragments2 {
         delay2[i] => delay2Gain[i] => delay2[i];
         delay3[i] => delay3Gain[i] => delay3[i];
         
-        0.1 => buff[i].gain;
-        1000::ms => env[i].duration;
+        500::ms => env[i].duration;
     }
     
     // Gradually turn up gain
@@ -54,15 +54,16 @@ public class VoiceFragments2 {
     
     fun void shiftGain() {
         // TODO: pass in from top of the file? Needs to be synchronized with rest of piece
-        3000 => int totalDuration;
+        9600 => int totalDuration;
         Std.ftoi(totalDuration * 0.618) => int longSection;
         totalDuration - longSection => int shortSection;
         
-        0.01 => float maxGain;
-        maxGain / (longSection / 100)  => float gainIncrement;
+        0.09 => float maxGain;
+        maxGain / longSection => float gainIncrement;
                 
         for (0 => int i; i < longSection; i++) {
             masterGain.gain() + gainIncrement => masterGain.gain;
+            //<<< "VF2 ", masterGain.gain() >>>;
             100::ms => now;
         }
         
@@ -70,6 +71,7 @@ public class VoiceFragments2 {
         
         for (0 => int i; i < shortSection; i++) {
             masterGain.gain() - gainDecrement => masterGain.gain;
+            //<<< "VF2 ", masterGain.gain() >>>;
             100::ms => now;
         }
     }
@@ -81,13 +83,14 @@ public class VoiceFragments2 {
         spork ~ envelopeOn(length);
         
         now + length => time later;
-        <<< "VoiceFragment2 gain: ", masterGain.gain() >>>;
+        //<<< "VoiceFragment2 gain: ", masterGain.gain() >>>;
         
         while (now < later) {
+            //<<< "PLAY" >>>;
             spork ~ play();
             Math.random2(1000, 2500)::ms => now;
         }
-        1000::ms => now;
+        5000::ms => now;
     }
     
     /**
@@ -104,16 +107,12 @@ public class VoiceFragments2 {
     
     fun void play() {
         getVoice(buffVoices) => int which;
-        
+        //<<< "WHICH:    ", which >>>;
+        //<<< buffVoices[0], buffVoices[1], buffVoices[2], buffVoices[3], buffVoices[4], 
+        //buffVoices[5], buffVoices[6], buffVoices[7] >>>;
         if (which > -1) {
-            // Decide comb filter parameters
-            if (Math.randomf() > 0.0) { 
-                turnOnComb(which);
-            }
-            else {
-                0 => combGain[which].gain;
-                Math.random2f(0.25, 0.45) => dryGain[which].gain;
-            }
+            // Set comb filter parameters
+            setComb(which);
             
             // Set buffer parameters
             me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
@@ -131,14 +130,17 @@ public class VoiceFragments2 {
             
             0 => buffVoices[which]; 
         }
+        //<<< buffVoices[0], buffVoices[1], buffVoices[2], buffVoices[3], buffVoices[4], 
+        //buffVoices[5], buffVoices[6], buffVoices[7] >>>;
     }
     
-    fun void turnOnComb(int which) {
-        Math.random2f(0.1, 0.3) => dryGain[which].gain;
-        Math.random2f(0.15, 0.3) => combGain[which].gain;
-        Math.random2f(0.80, 0.97) => 
+    fun void setComb(int which) {
+        Math.random2f(0.2, 0.6) => dryGain[which].gain;
+        Math.random2f(0.5, 0.6) => combGain[which].gain;
+        Math.random2f(0.85, 0.97) => 
         delay1[which].gain => delay2[which].gain => delay3[which].gain;
-        
+
+        // TODO: assign meaningful variable names
         Math.random2f(1, 12) => float x;
         Math.random2(1, 12) => int y;
         Math.random2(1, 12) => int z;
@@ -148,8 +150,8 @@ public class VoiceFragments2 {
         raiseByHalfSteps(x, z)::ms => delay3[which].delay;
     }
     
-    fun int getVoice(int voices[]) {
-        for (int i; i < voices.size(); i++) { 
+    fun int getVoice(int voices[]) {    
+        for (0 => int i; i < voices.size(); i++) { 
             if (voices[i] == 0) {            
                 1 => voices[i];
                 return i;
