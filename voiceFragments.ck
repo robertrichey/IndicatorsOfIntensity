@@ -29,7 +29,7 @@ public class VoiceFragments {
     for (0 => int i; i < buff.size(); i++) {
         buff[i] => masterEnv => env[i] => rev[i] => masterGain => pan[i] => dac;
         20::ms => env[i].duration;
-        //Math.random2f(-0.9, 0.9) => pan[i].pan;
+        Math.random2f(-0.9, 0.9) => pan[i].pan;
     }
     
        
@@ -40,7 +40,7 @@ public class VoiceFragments {
      * Play voice fragments for a given duration
      */    
     fun void turnOn(dur length) {
-        setPan();
+        //setPan();
         spork ~ envelopeOn(length);
         
         now + length => time later;
