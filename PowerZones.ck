@@ -47,7 +47,7 @@ public class PowerZones {
                         // Select a voice sample for playback, use its length to set fragment duration
                         voice.setVoice() => dur voiceLength;
                         spork ~ fragments.turnOn(voiceLength); 
-                        //spork ~ fragments2.turnOn(voiceLength);
+                        spork ~ fragments2.turnOn(voiceLength);
                         spork ~ voice.play();
                     }
                     currentZone => previousZone;

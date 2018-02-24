@@ -56,7 +56,7 @@ fun void play() {
         
     if (which > -1) {
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
-        Math.random2f(1.0, 2.5) => buff[which].gain;
+        Math.random2f(0.8, 2.2) => buff[which].gain;
         buff[which].length() * 0.15 => env[which].duration;
         Math.random2f(-0.8, 0.8) => pan[which].pan;
         

@@ -11,31 +11,31 @@ public class ShiftingFMWave3 extends ShiftingFMWave {
         // Play sound based on grain for total duration
         for (0 => int i; i < grains.numberOfGrains - 1; i++) {
             if (!isOff) {     
-                Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 63, 85, grains.cadence[i])) => 
+                Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 67, 96, grains.cadence[i])) => 
                 float startCarFreq;
                 
-                Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 63, 85, grains.cadence[i + 1])) => 
+                Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 67, 96, grains.cadence[i + 1])) => 
                 float endCarFreq;
                 
                 
-                getTransformation(grains.minSpeed, grains.maxSpeed, 40, 200, grains.speed[i]) => 
+                getTransformation(grains.minSpeed, grains.maxSpeed, 120, 500, grains.speed[i]) => 
                 float startModFreq;
                 
-                getTransformation(grains.minSpeed, grains.maxSpeed, 40, 200, grains.speed[i + 1]) => 
+                getTransformation(grains.minSpeed, grains.maxSpeed, 120, 500, grains.speed[i + 1]) => 
                 float endModFreq;
                 
                 
-                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.1, 0.2, grains.heartRate[i]) => 
+                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.08, 0.15, grains.heartRate[i]) => 
                 float startCarGain;
                 
-                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.1, 0.2, grains.heartRate[i + 1]) => 
+                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.08, 0.15, grains.heartRate[i + 1]) => 
                 float endCarGain;
                 
                 
-                getTransformation(grains.minPower, grains.maxPower, 300, 1200, grains.power[i]) => 
+                getTransformation(grains.minPower, grains.maxPower, 350, 1200, grains.power[i]) => 
                 float startModGain;
                 
-                getTransformation(grains.minPower, grains.maxPower, 300, 1200, grains.power[i + 1]) => 
+                getTransformation(grains.minPower, grains.maxPower, 350, 1200, grains.power[i + 1]) => 
                 float endModGain;
                 
                 spork ~ shiftCarPitch(startCarFreq, endCarFreq, shiftDur);

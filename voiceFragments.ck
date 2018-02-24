@@ -17,7 +17,7 @@ public class VoiceFragments {
     Envelope masterEnv;
     Gain masterGain;
     
-    0.18 => masterGain.gain;
+    0.23 => masterGain.gain;
     1 => int isOff;
     string filename[23];
     
