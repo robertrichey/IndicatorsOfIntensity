@@ -132,6 +132,34 @@ data.getGrains(2) @=> wave3.grains;
 totalDuration => wave3.totalDuration;
 spork ~ wave3.play();
 
+1.0 => float waveChance;
+
+spork ~ setWaveChance();
+
+fun void setWaveChance() {
+    0.5 => float target;
+    100.0 => float grain;
+    totalDuration / 4 / grain => float count;
+    (waveChance - target) / count => float increment;
+    
+    (count * grain)::ms => now;
+        
+    for (0 => int i; i < count; i++) {
+        increment -=> waveChance;
+        grain::ms => now;
+    }   
+    for (0 => int i; i < count; i++) {
+        increment +=> waveChance;
+        grain::ms => now;
+    }    
+    (count * grain)::ms => now;
+}
+
+fun float getWaveChance() {
+    <<< waveChance >>>;
+    return waveChance;
+}
+
 
 // Create and launch voices in background
 
@@ -247,15 +275,15 @@ fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
             spork ~ wave.turnOn(ringTime, pan[which].pan(), e);
             
             // Sometimes use additional FM waves
-            if (Math.randomf() > 0.5) {
+            if (Math.randomf() > getWaveChance()) {
                 1::ms => now;
                 1 => wave2isOn;
-                spork ~ wave2.turnOn(ringTime, wave.getPan() * -1, e2);
+                spork ~ wave2.turnOn(ringTime, Math.random2(-0.9, 0.9), e2);
             }
-            if (Math.randomf() > 0.5) {
+            if (Math.randomf() > getWaveChance()) {
                 1::ms => now;
                 1 => wave3isOn;
-                spork ~ wave3.turnOn(ringTime, wave.getPan() * -1, e3);
+                spork ~ wave3.turnOn(ringTime, Math.random2(-0.9, 0.9), e3);
             }
             e => now;
             
