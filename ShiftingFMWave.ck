@@ -26,13 +26,26 @@ public class ShiftingFMWave {
      */
     fun void turnOn(float ringTime, float p, Event e) {
         p => pan.pan;
-
+        
+        float rampUp;
+        float rampDown;
+            
+        if (Math.randomf() > 0.5) {
+            Math.random2f(0.25, 0.995) => rampUp;
+            1 - rampUp => rampDown; 
+        }
+        else {
+            0.005 => rampUp;
+            0.995 => rampDown;
+        }
+        
+        // old rampup/down was 0.005/0.995
         0 => isOff;
-        ringTime * 0.005::ms => env.duration;
+        ringTime * rampUp::ms => env.duration;
         env.keyOn();
         env.duration() => now;
 
-        ringTime * 0.995::ms => env.duration;
+        ringTime * rampDown::ms => env.duration;
         env.keyOff();
 
         env.duration() => now;

@@ -65,31 +65,25 @@ if (!pianoOut3.open(port7)) {
     me.exit();
 }
 
+// TODO: may need to change to 8 if interface not in use
+MidiOut drumOut;
+8 => int port8;
+
+if (!drumOut.open(port8)) {
+    <<< "Error: MIDI port did not open on port: ", port8 >>>;
+    me.exit();
+}
+
 
 //---------- PATCH ----------//
 
 5 => int numSineVoices;
 int sineVoices[numSineVoices];
-3 => int numBuffVoices;
-int buffVoices[numBuffVoices];
-
-SndBuf2 buff[numBuffVoices]; // filter, multiple sounds, keep track of duration between drums
-Pan2 pan[numBuffVoices];
-
-2.0 => buff[0].rate;
-0.5 => buff[1].rate;
-1.0 => buff[2].rate;
-
-
--0.4 => pan[0].pan;
-0 => pan[1].pan;
-0.4 => pan[2].pan;
 
 SinOsc sine[numSineVoices];
 Envelope env[numSineVoices]; // for sine waves
 
 // Connect UGens to dac
-makePatch(buff, pan);
 makePatch(sine, env);
 
 
@@ -137,7 +131,7 @@ spork ~ wave3.play();
 spork ~ setWaveChance();
 
 fun void setWaveChance() {
-    0.5 => float target;
+    0.4 => float target;
     100.0 => float grain;
     totalDuration / 4 / grain => float count;
     (waveChance - target) / count => float increment;
@@ -198,7 +192,7 @@ for (1 => int i; i < numberOfSamples; i++) {
         <<< i, "power = 0" >>>;
         
         if (drumIsOff) {
-            spork ~ playDrum(buff, buffVoices, i, lastDrum);
+            spork ~ playDrum(i, lastDrum);
         }
         
         i => lastDrum;
@@ -219,13 +213,6 @@ for (1 => int i; i < numberOfSamples; i++) {
 
 
 // TODO: Document
-fun void makePatch(SndBuf2 instrument[], Pan2 pan[]) {    
-    for (0 => int i; i < instrument.size(); i++) {
-        instrument[i] => pan[i] => dac;
-        me.dir() + "bass_drum.wav" => buff[i].read;
-        buff[i].samples() => buff[i].pos;
-    }
-}
 
 fun void makePatch(SinOsc instrument[], Envelope env[]) {
     for (0 => int i; i < instrument.size(); i++) {
@@ -234,81 +221,70 @@ fun void makePatch(SinOsc instrument[], Envelope env[]) {
     }
 }
 
-fun void playDrum(SndBuf2 instrument[], int voices[], int i, int lastDrum) {
+fun void playDrum(int i, int lastDrum) {
     0 => drumIsOff;
     
-    [0.5, 1.0, 2.0] @=> float rates[];
-    setDrumGain(instrument);
-    
     for (0 => int i; i < 2; i++) {
-        getVoice2(voices) => int which;
-        
-        if (which > -1) {
-            if (Math.randomf() > 0.33) {
-                //rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
-                0 => buff[which].pos;
-                Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
-            }
-            0 => voices[which]; 
-        }
+        if (Math.randomf() > 0.33) {
+            Math.random2(72, 74) => int note;
+            Math.random2(60, 80) => int velocity;
+            
+            MIDInote(drumOut, 1, note, velocity);
+            Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
+            MIDInote(drumOut, 0, note, velocity);                
+        } 
     }
-    getVoice2(voices) => int which;
     
-    if (which > -1) {
-        //rates[Math.random2(0, rates.size()-1)] => buff[which].rate;
-        0 => buff[which].pos;
+    Math.random2(72, 74) => int note;
+    Math.random2(60, 80) => int velocity;
+    
+    MIDInote(drumOut, 1, note, velocity);
+    
+    // fade fm wave in and out, 55% chance to play
+    if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
+        //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
+        //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
+        Event e;
+        Event e2;
+        Event e3;
         
-        // fade fm wave in and out, 55% chance to play
-        if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
-            //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
-            //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
-            Event e;
-            Event e2;
-            Event e3;
-            
-            0 => int wave2isOn;
-            0 => int wave3isOn;
-
-            (i-lastDrum) * sampleRate => float ringTime; // elapsed time between previous two drum hits 
-            
-            // Always turn on one FM wave
-            spork ~ wave.turnOn(ringTime, pan[which].pan(), e);
-            
-            // Sometimes use additional FM waves
-            if (Math.randomf() > getWaveChance()) {
-                1::ms => now;
-                1 => wave2isOn;
-                spork ~ wave2.turnOn(ringTime, Math.random2(-0.9, 0.9), e2);
-            }
-            if (Math.randomf() > getWaveChance()) {
-                1::ms => now;
-                1 => wave3isOn;
-                spork ~ wave3.turnOn(ringTime, Math.random2(-0.9, 0.9), e3);
-            }
-            e => now;
-            
-            if (wave2isOn) {
-                e2 => now;
-                0 => wave2isOn;
-            }
-            if (wave3isOn) {
-                e3 => now;
-                0 => wave3isOn;
-            }
+        0 => int wave2isOn;
+        0 => int wave3isOn;
+        
+        (i-lastDrum) * sampleRate => float ringTime; // elapsed time between previous two drum hits 
+        
+        // Always turn on one FM wave
+        // TODO: fix pan - currently set to random
+        spork ~ wave.turnOn(ringTime, Math.random2f(-0.9, 0.9), e);
+        
+        // Sometimes use additional FM waves
+        if (Math.randomf() > getWaveChance()) {
+            1::ms => now;
+            1 => wave2isOn;
+            spork ~ wave2.turnOn(ringTime, Math.random2f(-0.9, 0.9), e2);
         }
+        if (Math.randomf() > getWaveChance()) {
+            1::ms => now;
+            1 => wave3isOn;
+            spork ~ wave3.turnOn(ringTime, Math.random2f(-0.9, 0.9), e3);
+        }
+        e => now;
         
-        // TODO: accidental copy/paste? Remove?
-        Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
-        0 => voices[which]; 
+        if (wave2isOn) {
+            e2 => now;
+            0 => wave2isOn;
+        }
+        if (wave3isOn) {
+            e3 => now;
+            0 => wave3isOn;
+        }
     }
+    
+    // TODO: accidental copy/paste? Remove?
+    Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
+    MIDInote(drumOut, 0, note, velocity);                
     
     1 => drumIsOff;
-}
-
-fun void setDrumGain(SndBuf2 buff[]) {
-    for (0 => int i; i < buff.size(); i++) {
-        Math.random2f(2.0, 3.0) => buff[i].gain;
-    }
 }
 
 fun void playWave(ShiftingFMWave1 w) {
@@ -356,7 +332,7 @@ fun void playGuitar() {
     durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
     MIDInote(guitarOut1, 0, note, velocity);
     
-    if (Math.random2f(0.0, 1.0) > 0.45) {   
+    if (Math.randomf() > 0.45) {   
         playGuitarChord();
     }
     
@@ -391,7 +367,7 @@ fun void playFlute() {
     
     for (0 => int i; i < numNotes; i++) {
         // occasionally perform a trill halfway through passage
-        if (i == numNotes / 2 && Math.random2f(0.0, 1.0) > 0.6) {
+        if (i == numNotes / 2 && Math.randomf() > 0.6) {
             trill(velocity);
         }
         Math.random2(72, 96) => int note;
@@ -402,7 +378,7 @@ fun void playFlute() {
     }
     
     // occasionally end w/ a trill
-    if (Math.random2f(0.0, 1.0) > 0.66) {
+    if (Math.randomf() > 0.66) {
         trillFade(velocity);
     }
     
