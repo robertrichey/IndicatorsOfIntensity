@@ -228,7 +228,7 @@ fun void playDrum(int count) {
     for (0 => int i; i < 2; i++) {
         if (Math.randomf() > 0.33) {
             Math.random2(72, 74) => int note;
-            Math.random2(60, 80) => int velocity;
+            Math.random2(70, 100) => int velocity;
             
             MIDInote(drumOut, 1, note, velocity);
             Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
@@ -237,7 +237,7 @@ fun void playDrum(int count) {
     }
     
     Math.random2(72, 74) => int note;
-    Math.random2(60, 80) => int velocity;
+    Math.random2(90, 120) => int velocity;
     
     MIDInote(drumOut, 1, note, velocity);
     
@@ -314,7 +314,7 @@ fun void playGuitar() {
     0 => guitarIsOff;
     
     Math.random2(55, 91) => int note;
-    Math.random2(60, 80) => int velocity;
+    Math.random2(50, 70) => int velocity;
     
     MIDInote(guitarOut1, 1, note, velocity);
     durations[Math.random2(0, durations.size()-1)] * 2::ms => now;
