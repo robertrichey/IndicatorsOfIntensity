@@ -239,10 +239,12 @@ fun void playDrum(int count) {
     Math.random2(72, 74) => int note;
     Math.random2(90, 120) => int velocity;
     
+    setWavePan(note) => float wavePan;
+    
     MIDInote(drumOut, 1, note, velocity);
     
     // fade fm wave in and out, 55% chance to play
-    if (wave.isOff && count > 30 && Math.random2f(0.0, 1.0) > 0.45) {
+    if (wave.isOff && count > 30 && Math.randomf() > 0.45) {
         //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
         //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
         Event e;
@@ -256,7 +258,7 @@ fun void playDrum(int count) {
         
         // Always turn on one FM wave
         // TODO: fix pan - currently set to random
-        spork ~ wave.turnOn(ringTime, Math.random2f(-0.9, 0.9), e);
+        spork ~ wave.turnOn(ringTime, wavePan, e);
         
         // Sometimes use additional FM waves
         if (Math.randomf() > getWaveChance()) {
@@ -286,6 +288,21 @@ fun void playDrum(int count) {
     MIDInote(drumOut, 0, note, velocity);                
     
     1 => drumIsOff;
+}
+
+fun float setWavePan(int note) {
+    float pan;
+    
+    if (note == 72) {
+        0 => pan;
+    }
+    else if (note == 73) {
+        -0.4 => pan;
+    }
+    else {
+        0.4 => pan;
+    }
+    return pan;
 }
 
 fun void playWave(ShiftingFMWave1 w) {
@@ -346,7 +363,7 @@ fun void playGuitarChord() {
     Math.random2(67, 79) => int note2;
     Math.random2(79, 91) => int note3;
     
-    Math.random2(80, 100) => int velocity;
+    Math.random2(75, 95) => int velocity;
     
     MIDInote(guitarOut1, 1, note1, velocity);
     MIDInote(guitarOut2, 1, note2, velocity);
@@ -419,7 +436,7 @@ fun void trillFade(int velocity) {
                 
         MIDInote(fluteOut, 0, note, velocity);
         MIDInote(fluteOut, 0, note + interval, velocity);
-        5 -=> velocity; // TODO: doesn't work - how to affect volume?
+        6 -=> velocity;
     }
 }
 
@@ -427,7 +444,7 @@ fun void playMarimba() {
     0 => marimbaIsOff;
     
     Math.random2(2, 8) => int numNotes;
-    Math.random2(80, 127) => int velocity;
+    Math.random2(95, 127) => int velocity;
     
     for (0 => int i; i < numNotes; i++) {
         Math.random2(36, 72) => int note; 
@@ -492,15 +509,4 @@ fun int getVoice(int voices[]) {
         }
     }
     return -1;
-}
-
-fun int getVoice2(int voices[]) {    
-    while (true) { 
-        Math.random2(0, voices.size()-1) => int which;
-        
-        if (voices[which] == 0) {            
-            1 => voices[which];
-            return which;
-        }
-    }
 }
