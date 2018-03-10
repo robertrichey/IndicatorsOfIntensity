@@ -192,7 +192,8 @@ for (1 => int i; i < numberOfSamples; i++) {
         <<< i, "power = 0" >>>;
         
         if (drumIsOff) {
-            spork ~ playDrum(i, lastDrum);
+            i - lastDrum => int numPassedSamples;
+            spork ~ playDrum(numPassedSamples);
         }
         
         i => lastDrum;
@@ -221,7 +222,7 @@ fun void makePatch(SinOsc instrument[], Envelope env[]) {
     }
 }
 
-fun void playDrum(int i, int lastDrum) {
+fun void playDrum(int count) {
     0 => drumIsOff;
     
     for (0 => int i; i < 2; i++) {
@@ -241,7 +242,7 @@ fun void playDrum(int i, int lastDrum) {
     MIDInote(drumOut, 1, note, velocity);
     
     // fade fm wave in and out, 55% chance to play
-    if (wave.isOff && i - lastDrum > 30 && Math.random2f(0.0, 1.0) > 0.45) {
+    if (wave.isOff && count > 30 && Math.random2f(0.0, 1.0) > 0.45) {
         //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
         //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
         Event e;
@@ -251,7 +252,7 @@ fun void playDrum(int i, int lastDrum) {
         0 => int wave2isOn;
         0 => int wave3isOn;
         
-        (i-lastDrum) * sampleRate => float ringTime; // elapsed time between previous two drum hits 
+        count * sampleRate => float ringTime; // elapsed time between previous two drum hits 
         
         // Always turn on one FM wave
         // TODO: fix pan - currently set to random
