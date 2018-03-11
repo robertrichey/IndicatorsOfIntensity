@@ -131,7 +131,7 @@ spork ~ wave3.play();
 spork ~ setWaveChance();
 
 fun void setWaveChance() {
-    0.4 => float target;
+    0.3 => float target;
     100.0 => float grain;
     totalDuration / 4 / grain => float count;
     (waveChance - target) / count => float increment;
@@ -228,23 +228,23 @@ fun void playDrum(int count) {
     for (0 => int i; i < 2; i++) {
         if (Math.randomf() > 0.33) {
             Math.random2(72, 74) => int note;
-            Math.random2(70, 100) => int velocity;
+            Math.random2(70, 115) => int velocity;
             
             MIDInote(drumOut, 1, note, velocity);
-            Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
+            Math.random2f(durations[0], durations[durations.size()-1]) * Math.random2f(1.0, 3.0)::ms => now;
             MIDInote(drumOut, 0, note, velocity);                
         } 
     }
     
     Math.random2(72, 74) => int note;
-    Math.random2(90, 120) => int velocity;
+    Math.random2(90, 127) => int velocity;
     
     setWavePan(note) => float wavePan;
     
     MIDInote(drumOut, 1, note, velocity);
     
     // fade fm wave in and out, 55% chance to play
-    if (wave.isOff && count > 30 && Math.randomf() > 0.45) {
+    if (wave.isOff && count > 30 && count < 12875 && Math.randomf() > 0.45) {
         //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
         //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
         Event e;
@@ -262,23 +262,21 @@ fun void playDrum(int count) {
         
         // Sometimes use additional FM waves
         if (Math.randomf() > getWaveChance()) {
-            1::ms => now;
             1 => wave2isOn;
-            spork ~ wave2.turnOn(ringTime, Math.random2f(-0.9, 0.9), e2);
+            spork ~ wave2.turnOn(ringTime, wavePan, e);
         }
         if (Math.randomf() > getWaveChance()) {
-            1::ms => now;
             1 => wave3isOn;
-            spork ~ wave3.turnOn(ringTime, Math.random2f(-0.9, 0.9), e3);
+            spork ~ wave3.turnOn(ringTime, wavePan, e);
         }
         e => now;
         
         if (wave2isOn) {
-            e2 => now;
+            e => now;
             0 => wave2isOn;
         }
         if (wave3isOn) {
-            e3 => now;
+            e => now;
             0 => wave3isOn;
         }
     }
@@ -316,7 +314,7 @@ fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     
     if (which > -1) {
         Math.random2(440, 880) => instrument[which].freq;
-        Math.random2f(0.2, 0.4) => instrument[which].gain;
+        Math.random2f(0.2, 0.37) => instrument[which].gain;
         
         1 => env[which].keyOn;
         env[which].duration() => now;    
@@ -330,7 +328,7 @@ fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
 fun void playGuitar() {
     0 => guitarIsOff;
     
-    Math.random2(55, 91) => int note;
+    Math.random2(55, 84) => int note;
     Math.random2(50, 70) => int velocity;
     
     MIDInote(guitarOut1, 1, note, velocity);
@@ -359,9 +357,9 @@ fun void playGuitar() {
 
 fun void playGuitarChord() {
     // assign each note its own octave
-    Math.random2(55, 67) => int note1;
-    Math.random2(67, 79) => int note2;
-    Math.random2(79, 91) => int note3;
+    Math.random2(48, 60) => int note1;
+    Math.random2(60, 72) => int note2;
+    Math.random2(72, 84) => int note3;
     
     Math.random2(75, 95) => int velocity;
     

@@ -29,23 +29,30 @@ public class ShiftingFMWave {
         
         float rampUp;
         float rampDown;
+        
+        Math.randomf() => float chance;
             
-        if (Math.randomf() > 0.5) {
-            Math.random2f(0.25, 0.995) => rampUp;
+        if (chance > 0.66) {
+            Math.random2f(0.25, 0.75) => rampUp;
             1 - rampUp => rampDown; 
+        }
+        else if (chance > 0.33) {
+            0.95 => rampUp;
+            0.05 => rampDown;
         }
         else {
             0.005 => rampUp;
             0.995 => rampDown;
         }
         
-        // old rampup/down was 0.005/0.995
+        Math.random2f(0.7, 1.3) => float multiplier;
+        
         0 => isOff;
-        ringTime * rampUp::ms => env.duration;
+        ringTime * multiplier * rampUp::ms => env.duration;
         env.keyOn();
         env.duration() => now;
 
-        ringTime * rampDown::ms => env.duration;
+        ringTime * multiplier * rampDown::ms => env.duration;
         env.keyOff();
 
         env.duration() => now;
