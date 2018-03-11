@@ -10,7 +10,7 @@ public class ShiftingFMWave2 extends ShiftingFMWave {
         
         // Play sound based on grain for total duration
         for (0 => int i; i < grains.numberOfGrains - 1; i++) {
-            if (!isOff) {     
+            //if (!isOff) {     
                 Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 24, 48, grains.cadence[i])) => 
                 float startCarFreq;
                 
@@ -25,10 +25,10 @@ public class ShiftingFMWave2 extends ShiftingFMWave {
                 float endModFreq;
                 
                 
-                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.08, 0.15, grains.heartRate[i]) => 
+                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.1, 0.18, grains.heartRate[i]) => 
                 float startCarGain;
                 
-                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.08, 0.15, grains.heartRate[i + 1]) => 
+                getTransformation(grains.minHeartRate, grains.maxHeartRate, 0.1, 0.18, grains.heartRate[i + 1]) => 
                 float endCarGain;
                 
                 
@@ -42,7 +42,7 @@ public class ShiftingFMWave2 extends ShiftingFMWave {
                 spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
                 spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
                 spork ~ shiftModGain(startModGain, endModGain, shiftDur);
-            }
+            //}
             shiftDur::ms => now;
         }
     }

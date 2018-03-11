@@ -153,7 +153,7 @@ public class ShiftingVoice {
 
          // Play sound based on grain for total duration
          for (0 => int i; i < grains.numberOfGrains - 1; i++) {  
-             if (!isOff) {     
+             //if (!isOff) {     
                  Std.mtof(getTransformation(grains.minPower, grains.maxPower, 3, 10, grains.power[i])) => 
                  float startDelay;
                  
@@ -161,7 +161,7 @@ public class ShiftingVoice {
                  float endDelay;
                  
                  spork ~ shiftDelay(startDelay, endDelay, shiftDur);
-             }
+             //}
              shiftDur::ms => now;
          }
      }

@@ -10,7 +10,7 @@ public class ShiftingFMWave1 extends ShiftingFMWave {
         
         // Play sound based on grain for total duration
         for (0 => int i; i < grains.numberOfGrains - 1; i++) {
-            if (!isOff) {     
+            //if (!isOff) {     
                 Std.mtof(getTransformation(grains.minPower, grains.maxPower, 36, 94, grains.power[i])) => 
                 float startCarFreq;
                 
@@ -42,7 +42,7 @@ public class ShiftingFMWave1 extends ShiftingFMWave {
                 spork ~ shiftCarGain(startCarGain, endCarGain, shiftDur);
                 spork ~ shiftModPitch(startModFreq, endModFreq, shiftDur);
                 spork ~ shiftModGain(startModGain, endModGain, shiftDur);
-            }
+            //}
             shiftDur::ms => now;
         }
     }
