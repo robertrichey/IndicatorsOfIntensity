@@ -45,7 +45,7 @@ public class ShiftingFMWave {
             0.995 => rampDown;
         }
         
-        Math.random2f(0.7, 1.3) => float multiplier;
+        Math.random2f(0.8, 1.2) => float multiplier;
         
         0 => isOff;
         ringTime * multiplier * rampUp::ms => env.duration;

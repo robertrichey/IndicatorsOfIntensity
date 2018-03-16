@@ -17,7 +17,7 @@ public class VoiceFragments {
     Envelope masterEnv;
     Gain masterGain;
     
-    0.23 => masterGain.gain;
+    0.27 => masterGain.gain;
     1 => int isOff;
     string filename[23];
     
@@ -28,7 +28,7 @@ public class VoiceFragments {
     // Sound chain, set envelope
     for (0 => int i; i < buff.size(); i++) {
         buff[i] => masterEnv => env[i] => rev[i] => masterGain => pan[i] => dac;
-        20::ms => env[i].duration;
+        //20::ms => env[i].duration;
         Math.random2f(-0.9, 0.9) => pan[i].pan;
     }
     
@@ -40,7 +40,7 @@ public class VoiceFragments {
      * Play voice fragments for a given duration
      */    
     fun void turnOn(dur length) {
-        //setPan();
+        setPan();
         spork ~ envelopeOn(length);
         
         now + length => time later;

@@ -25,10 +25,10 @@ public class ShiftingFMWave1 extends ShiftingFMWave {
                 float endModFreq;
                 
                 
-                getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i]) => 
+                getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.18, grains.cadence[i]) => 
                 float startCarGain;
                 
-                getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.15, grains.cadence[i + 1]) => 
+                getTransformation(grains.minCadence, grains.maxCadence, 0.08, 0.18, grains.cadence[i + 1]) => 
                 float endCarGain;
                 
                 

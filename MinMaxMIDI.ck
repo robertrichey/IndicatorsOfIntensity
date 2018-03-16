@@ -231,7 +231,7 @@ fun void playDrum(int count) {
             Math.random2(70, 115) => int velocity;
             
             MIDInote(drumOut, 1, note, velocity);
-            Math.random2f(durations[0], durations[durations.size()-1]) * Math.random2f(1.0, 3.0)::ms => now;
+            Math.random2f(durations[0], durations[durations.size()-1]) * Math.random2f(1.0, 2.5)::ms => now;
             MIDInote(drumOut, 0, note, velocity);                
         } 
     }
@@ -244,7 +244,7 @@ fun void playDrum(int count) {
     MIDInote(drumOut, 1, note, velocity);
     
     // fade fm wave in and out, 55% chance to play
-    if (wave.isOff && count > 30 && count < 12875 && Math.randomf() > 0.45) {
+    if (wave.isOff && count > 30 && count < 12500 && Math.randomf() > 0.45) {
         //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
         //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
         Event e;
@@ -263,11 +263,11 @@ fun void playDrum(int count) {
         // Sometimes use additional FM waves
         if (Math.randomf() > getWaveChance()) {
             1 => wave2isOn;
-            spork ~ wave2.turnOn(ringTime, wavePan, e);
+            spork ~ wave2.turnOn(ringTime, Math.random2f(-0.9, 0.9), e);
         }
         if (Math.randomf() > getWaveChance()) {
             1 => wave3isOn;
-            spork ~ wave3.turnOn(ringTime, wavePan, e);
+            spork ~ wave3.turnOn(ringTime, Math.random2f(-0.9, 0.9), e);
         }
         e => now;
         
@@ -314,7 +314,7 @@ fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     
     if (which > -1) {
         Math.random2(440, 880) => instrument[which].freq;
-        Math.random2f(0.2, 0.37) => instrument[which].gain;
+        Math.random2f(0.15, 0.25) => instrument[which].gain;
         
         1 => env[which].keyOn;
         env[which].duration() => now;    

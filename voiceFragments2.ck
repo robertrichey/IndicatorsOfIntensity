@@ -34,7 +34,7 @@ public class VoiceFragments2 {
     // Sound chain, set envelope, buff gain
     for (0 => int i; i < numVoices; i++) {
         // TODO: Use pan?
-        buff[i] => masterEnv => dryGain[i] => env[i] => masterGain => dac;//pan[i] => dac;
+        buff[i] => masterEnv => dryGain[i] => env[i] => masterGain => pan[i] => dac;//pan[i] => dac;
         
         masterEnv => combGain[i];
         
@@ -58,7 +58,7 @@ public class VoiceFragments2 {
         Std.ftoi(totalDuration * 0.618) => int longSection;
         totalDuration - longSection => int shortSection;
         
-        0.09 => float maxGain;
+        0.15 => float maxGain;
         maxGain / longSection => float gainIncrement;
                 
         for (0 => int i; i < longSection; i++) {
@@ -80,6 +80,7 @@ public class VoiceFragments2 {
      * Play voice fragments for a given duration
      */    
     fun void turnOn(dur length) {
+        setPan();
         spork ~ envelopeOn(length);
         
         now + length => time later;
@@ -91,6 +92,15 @@ public class VoiceFragments2 {
             Math.random2(1000, 2500)::ms => now;
         }
         5000::ms => now;
+    }
+    
+    /**
+     * Randomly set each Pan2 object
+     */
+    fun void setPan() {
+        for (0 => int i; i < numVoices; i++) {
+            Math.random2f(-0.3, 0.3) => pan[i].pan;
+        }        
     }
     
     /**
