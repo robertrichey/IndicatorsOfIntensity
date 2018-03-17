@@ -58,7 +58,7 @@ public class VoiceFragments2 {
         Std.ftoi(totalDuration * 0.618) => int longSection;
         totalDuration - longSection => int shortSection;
         
-        0.15 => float maxGain;
+        0.18 => float maxGain;
         maxGain / longSection => float gainIncrement;
                 
         for (0 => int i; i < longSection; i++) {
@@ -145,8 +145,8 @@ public class VoiceFragments2 {
     }
     
     fun void setComb(int which) {
-        Math.random2f(0.2, 0.6) => dryGain[which].gain;
-        Math.random2f(0.5, 0.6) => combGain[which].gain;
+        Math.random2f(0.3, 0.6) => dryGain[which].gain;
+        Math.random2f(0.7, 0.9) => combGain[which].gain;
         Math.random2f(0.85, 0.97) => 
         delay1[which].gain => delay2[which].gain => delay3[which].gain;
 
