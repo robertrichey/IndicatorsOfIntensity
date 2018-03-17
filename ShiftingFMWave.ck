@@ -3,12 +3,16 @@
 public class ShiftingFMWave {
     SampleGrains grains;
     float totalDuration;
+    float baseGains[];
+    float curGains[];
     1 => int isOff;
     
     spork ~ panShift();
     
     // PATCH
-    SinOsc modulator => TriOsc carrier => Envelope env => Pan2 pan => dac;
+    SinOsc modulator => TriOsc carrier => NRev rev => Envelope env => Pan2 pan => dac;
+    
+    0.18 => rev.mix;
 
     // Tell the oscillator to interpret input as frequency modulation
     2 => carrier.sync;
@@ -26,6 +30,8 @@ public class ShiftingFMWave {
      */
     fun void turnOn(float ringTime, float p, Event e) {
         p => pan.pan;
+        getGain() @=> curGains;
+        <<< "FM gain range: ", curGains[0], curGains[1] >>>;
         
         float rampUp;
         float rampDown;
@@ -59,6 +65,16 @@ public class ShiftingFMWave {
         1 => isOff;
         
         e.signal();
+    }
+    
+    // TODO: document
+    fun float[] getGain() {
+        if (Math.randomf() > 0.33) {
+            return baseGains;    
+        }
+        else {
+            return [baseGains[0]/3, baseGains[1]/3];
+        }
     }
     
     /** 

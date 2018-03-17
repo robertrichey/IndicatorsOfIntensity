@@ -126,6 +126,7 @@ data.getGrains(2) @=> wave3.grains;
 totalDuration => wave3.totalDuration;
 spork ~ wave3.play();
 
+// TODO: document and put in right place
 1.0 => float waveChance;
 
 spork ~ setWaveChance();
@@ -248,8 +249,6 @@ fun void playDrum(int count) {
         //<<< i, "-", lastDrum, "=", i - lastDrum, ((i - lastDrum) * sampleRate) >>>;
         //, "(" + Std.ftoa((i - lastDrum) * sampleRate) + " ms)" >>>;
         Event e;
-        Event e2;
-        Event e3;
         
         0 => int wave2isOn;
         0 => int wave3isOn;
