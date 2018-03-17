@@ -17,7 +17,7 @@ for (0 => int i; i < buff.size(); i++) {
 }
 
 
-960 / 4 => int x;
+960 / 3 => int x;
 
 1.0 => float threshold;
 0.0 => float minChance;
@@ -34,10 +34,7 @@ difference / (x - peakDensity) => float thresholdIncrement;
 
 
 for (0 => int i; i < x; i++) {
-    Math.randomf() => float chance;
-    //1 => float chance;
-    
-    if (chance > threshold) {
+    if (Math.randomf() > threshold) {
         // play something
         spork ~ play();
     }
@@ -47,7 +44,7 @@ for (0 => int i; i < x; i++) {
     else {
         thresholdIncrement +=> threshold;
     }
-    4::second => now;
+    3::second => now;
 }
 5::second => now;
 
@@ -56,7 +53,15 @@ fun void play() {
         
     if (which > -1) {
         me.dir() + filename[Math.random2(0, filename.size()-1)] => buff[which].read;
-        Math.random2f(0.8, 2.2) => buff[which].gain;
+        
+        // Choose gain settings
+        if (Math.randomf() > 0.9) {
+            3.0 => buff[which].gain;
+        }
+        else {
+            Math.random2f(0.3, 2.5) => buff[which].gain;
+        }
+        
         buff[which].length() * 0.15 => env[which].duration;
         Math.random2f(-0.8, 0.8) => pan[which].pan;
         

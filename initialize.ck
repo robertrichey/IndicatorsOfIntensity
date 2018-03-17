@@ -17,4 +17,4 @@ Machine.add(me.dir() + "/VoiceFragments2.ck");
 // Performance classes (~16 minutes)
 Machine.add(me.dir() + "/PowerZones.ck");
 Machine.add(me.dir() + "/MinMaxMIDI.ck");
-Machine.add(me.dir() + "/bikeSounds.ck");
+Machine.add(me.dir() + "/BikeSounds.ck");
