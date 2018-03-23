@@ -12,10 +12,10 @@ public class ShiftingFMWave3 extends ShiftingFMWave {
 
         // Play sound based on grain for total duration
         for (0 => int i; i < grains.numberOfGrains - 1; i++) {
-            Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 67, 96, grains.cadence[i])) => 
+            Std.mtof(getTransformation(grains.minHeartRate, grains.maxHeartRate, 67, 96, grains.heartRate[i])) => 
             float startCarFreq;
             
-            Std.mtof(getTransformation(grains.minCadence, grains.maxCadence, 67, 96, grains.cadence[i + 1])) => 
+            Std.mtof(getTransformation(grains.minHeartRate, grains.maxHeartRate, 67, 96, grains.heartRate[i + 1])) => 
             float endCarFreq;
             
             

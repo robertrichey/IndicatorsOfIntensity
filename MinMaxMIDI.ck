@@ -132,7 +132,7 @@ spork ~ wave3.play();
 spork ~ setWaveChance();
 
 fun void setWaveChance() {
-    0.3 => float target;
+    0.25 => float target;
     100.0 => float grain;
     totalDuration / 4 / grain => float count;
     (waveChance - target) / count => float increment;
@@ -232,7 +232,7 @@ fun void playDrum(int count) {
             Math.random2(70, 115) => int velocity;
             
             MIDInote(drumOut, 1, note, velocity);
-            Math.random2f(durations[0], durations[durations.size()-1]) * Math.random2f(1.0, 2.5)::ms => now;
+            Math.random2f(durations[1], durations[durations.size()-1]) * Math.random2f(1.0, 2.5)::ms => now;
             MIDInote(drumOut, 0, note, velocity);                
         } 
     }
