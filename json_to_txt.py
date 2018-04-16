@@ -16,7 +16,7 @@ from pprint import pprint
 
 # ----- JSON ----- #
 
-with open('test2.json') as data_file:
+with open('ride_data.json') as data_file:
 	data = json.load(data_file)
 
 

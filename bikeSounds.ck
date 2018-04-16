@@ -9,7 +9,7 @@ string filename[21];
 
 for (0 => int i; i < filename.size(); i++) {
     <<< i >>>;
-    "/bike2/STE-0" + Std.itoa(i) + ".wav" => filename[i];
+    "/bike_sounds/STE-0" + Std.itoa(i) + ".wav" => filename[i];
 }
 
 for (0 => int i; i < buff.size(); i++) {

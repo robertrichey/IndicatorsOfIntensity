@@ -22,7 +22,7 @@ public class VoiceFragments {
     string filename[23];
     
     for (0 => int i; i < filename.size(); i++) {
-        "/voice/" + Std.itoa(i) + ".wav" => filename[i];
+        "/voice_sounds/" + Std.itoa(i) + ".wav" => filename[i];
     }
     
     // Sound chain, set envelope

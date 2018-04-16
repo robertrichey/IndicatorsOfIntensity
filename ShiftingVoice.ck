@@ -23,7 +23,7 @@ public class ShiftingVoice {
     
     for (0 => int i; i < filename.size(); i++) {
         <<< i >>>;
-        "/voice/" + Std.itoa(i) + ".wav" => filename[i];
+        "/voice_sounds/" + Std.itoa(i) + ".wav" => filename[i];
     }
     
     // TODO: remove and access from one place
