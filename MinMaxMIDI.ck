@@ -433,7 +433,7 @@ fun void trillFade(int velocity) {
                 
         MIDInote(fluteOut, 0, note, velocity);
         MIDInote(fluteOut, 0, note + interval, velocity);
-        6 -=> velocity;
+        5 -=> velocity;
     }
 }
 

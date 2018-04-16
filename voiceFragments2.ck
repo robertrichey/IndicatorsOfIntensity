@@ -58,7 +58,8 @@ public class VoiceFragments2 {
         Std.ftoi(totalDuration * 0.618) => int longSection;
         totalDuration - longSection => int shortSection;
         
-        0.16 => float maxGain;
+        // max was 0.16
+        0.12 => float maxGain;
         maxGain / longSection => float gainIncrement;
                 
         for (0 => int i; i < longSection; i++) {
@@ -107,10 +108,10 @@ public class VoiceFragments2 {
      * Collectively fade voice fragments in and out using a master envelope
      */    
     fun void envelopeOn(dur length) {
-        length * 0.25 => masterEnv.duration;
+        length * 0.2 => masterEnv.duration;
         
         masterEnv.keyOn();
-        length * 0.75 => now;
+        length * 0.8 => now;
         masterEnv.keyOff();
         masterEnv.duration() => now;
     }
@@ -145,8 +146,8 @@ public class VoiceFragments2 {
     }
     
     fun void setComb(int which) {
-        Math.random2f(0.3, 0.6) => dryGain[which].gain;
-        Math.random2f(0.7, 0.8) => combGain[which].gain;
+        Math.random2f(0.3, 0.5) => dryGain[which].gain;
+        Math.random2f(0.6, 0.75) => combGain[which].gain;
         Math.random2f(0.85, 0.97) => 
         delay1[which].gain => delay2[which].gain => delay3[which].gain;
 
