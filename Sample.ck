@@ -1,5 +1,5 @@
 /**
- * An object representing a single sample recorded by a cyclist's power meter
+ * Represents a single sample recorded by a cyclist's computer
  */
 
 public class Sample {

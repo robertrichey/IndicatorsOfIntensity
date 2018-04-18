@@ -49,7 +49,7 @@ public class RideData {
     
     
     //---------- Calculate minimums, maximums, and averages ----------//
-    
+    // NOTE: does not currently calculate minimum values
     
     samples[0].power.current => float totalPower;
     samples[0].speed.current => float totalSpeed;
@@ -69,31 +69,36 @@ public class RideData {
     samples[0].cadence.current => int maxCadence;
     
     
-    // TODO unnecessary assignments with min function?
     for (1 => int i; i < numberOfSamples; i++) {    
         
         // Power
-        Std.ftoi(Math.min(minPower, samples[i].power.current)) => minPower;
+        //Math.min(minPower, samples[i].power.current) => minPower;
         
-        Std.ftoi(Math.max(maxPower, samples[i].power.current)) => maxPower;
+        if (samples[i].power.current > maxPower) {
+            samples[i].power.current => maxPower;
+        }
         maxPower => samples[i].power.max;
         
         samples[i].power.current +=> totalPower;
         Std.ftoi(getAverage(totalPower, i)) => samples[i].power.average;
         
         // Speed
-        Math.min(minSpeed, samples[i].speed.current) => minSpeed;
+        //Math.min(minSpeed, samples[i].speed.current) => minSpeed;
         
-        Math.max(maxSpeed, samples[i].speed.current) => maxSpeed;
+        if (samples[i].speed.current > maxSpeed) {
+            samples[i].speed.current => maxSpeed;
+        }
         maxSpeed => samples[i].speed.max;
         
         samples[i].speed.current +=> totalSpeed;
         getAverage(totalSpeed, i) => samples[i].speed.average;
         
         // Heart rate
-        Std.ftoi(Math.min(minHeartRate, samples[i].heartRate.current)) => minHeartRate;
+        //Std.ftoi(Math.min(minHeartRate, samples[i].heartRate.current)) => minHeartRate;
         
-        Std.ftoi(Math.max(maxHeartRate, samples[i].heartRate.current)) => maxHeartRate;
+        if (samples[i].heartRate.current > maxHeartRate) {
+            samples[i].heartRate.current => maxHeartRate;
+        }
         maxHeartRate => samples[i].heartRate.max;
         
         samples[i].heartRate.current +=> totalHeartRate;
@@ -101,15 +106,18 @@ public class RideData {
         
         
         // Cadence
-        Std.ftoi(Math.min(minCadence, samples[i].cadence.current)) => minCadence;
+        //Std.ftoi(Math.min(minCadence, samples[i].cadence.current)) => minCadence;
         
-        Std.ftoi(Math.max(maxCadence, samples[i].cadence.current)) => maxCadence;
+        if (samples[i].cadence.current > maxCadence) {
+            samples[i].cadence.current => maxCadence;
+        }
         maxCadence => samples[i].cadence.max;
         
         samples[i].cadence.current +=> totalCadence;
         Std.ftoi(getAverage(totalCadence, i)) => samples[i].cadence.average;
     }
     
+    // <<< "MIN/MAX:", minPower, maxPower, minSpeed, maxSpeed, minCadence, maxCadence, minHeartRate, maxHeartRate >>>;
     
     /**
      *  Returns an array of Samples collected from the data set
