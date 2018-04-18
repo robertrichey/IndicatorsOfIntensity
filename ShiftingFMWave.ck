@@ -1,5 +1,8 @@
-// TODO: summarize class
-
+/**
+ * Creates a waveform via fm synthesis that pans back and forth in the stereo field,
+ * can be turned on and off, and have its oscillator's parameters shifted over a 
+ * given range during a given period of time
+ */
 public class ShiftingFMWave {
     SampleGrains grains;
     float totalDuration;
@@ -36,6 +39,7 @@ public class ShiftingFMWave {
         float rampUp;
         float rampDown;
         
+        // Decide envelope shape based on chance
         Math.randomf() => float chance;
             
         if (chance > 0.66) {
@@ -51,8 +55,10 @@ public class ShiftingFMWave {
             0.995 => rampDown;
         }
         
+        // Randomly increase or decrease the wave's ringTime a bit
         Math.random2f(0.8, 1.2) => float multiplier;
         
+        // Play the waveform
         0 => isOff;
         ringTime * multiplier * rampUp::ms => env.duration;
         env.keyOn();
@@ -67,7 +73,10 @@ public class ShiftingFMWave {
         e.signal();
     }
     
-    // TODO: document
+    /**
+     * Using the waveform's predetermined gain range, return either
+     * that range or a range reduced by a factor of three
+     */
     fun float[] getGain() {
         if (Math.randomf() > 0.33) {
             return baseGains;    

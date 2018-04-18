@@ -1,5 +1,7 @@
-// TODO: summarize class
-
+/**
+ * Subclass of ShiftingFMWave. Waveform continually shifts based on data from a rider's
+ * speed, power, heart rate, and cadence
+ */
 public class ShiftingFMWave1 extends ShiftingFMWave {
     [0.05, 0.15] @=> baseGains;
 
