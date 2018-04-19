@@ -4,7 +4,7 @@
 
 public class ShiftingVoice {
     // our patch - feed1Gainforward part
-    SndBuf2 buff => Gain dryGain => Envelope envMain => Gain master => Envelope envFrag => Pan2 pan => dac;
+    SndBuf2 buff => Gain dryGain => Envelope envMain => Gain master => Pan2 pan => dac;
     
     buff => Gain combGain;
     

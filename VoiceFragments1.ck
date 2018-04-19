@@ -44,7 +44,6 @@ public class VoiceFragments {
         spork ~ envelopeOn(length);
         
         now + length => time later;
-        //<<< "VoiceFragment gain: ", masterGain.gain() >>>;
         
         while (now < later) {
             spork ~ play();
@@ -80,10 +79,7 @@ public class VoiceFragments {
      * Set fragment parameters and play
      */     
     fun void play() {
-        getVoice(buffVoices) => int which;
-        
-        //<<< buffVoices[0], buffVoices[1], buffVoices[2], buffVoices[3], buffVoices[4] >>>;
-        
+        getVoice(buffVoices) => int which;        
         int fragLength;
         
         // Set duration and reverb based on chance
@@ -109,8 +105,6 @@ public class VoiceFragments {
         env[which].duration() => now;
         
         0 => buffVoices[which]; 
-        
-        //<<< buffVoices[0], buffVoices[1], buffVoices[2], buffVoices[3], buffVoices[4] >>>;
     }
 
     /**
@@ -132,7 +126,7 @@ public class VoiceFragments {
      * Gradually decrease gain to zero over the duration of the piece
      */     
     fun void turnDown() {
-        // TODO: pass in from top of the file? Needs to be synchronized with rest of peace
+        // TODO: pass in from outside class. Needs to be synchronized with rest of piece
         9600 => int totalDuration;
         masterGain.gain() / totalDuration => float gainDecrement;
         
