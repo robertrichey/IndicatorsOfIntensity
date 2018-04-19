@@ -1,9 +1,9 @@
 /**
- * Plays a ShiftingVoice and VVoiceFragment objects when the rider changes power zones
+ * Plays a ShiftingVoice and VoiceFragment objects when the rider changes power zones
  */
 
 public class PowerZones {
-    // Use cycling data set
+    // TODO: use one RideData object for this, ShiftingVoice, and MinMaxMIDI
     RideData data;
     data.getSamples() @=> Sample samples[];
     samples.size() => int numberOfSamples;

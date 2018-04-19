@@ -28,7 +28,6 @@ public class VoiceFragments {
     // Sound chain, set envelope
     for (0 => int i; i < buff.size(); i++) {
         buff[i] => masterEnv => env[i] => rev[i] => masterGain => pan[i] => dac;
-        //20::ms => env[i].duration;
         Math.random2f(-0.9, 0.9) => pan[i].pan;
     }
     
@@ -110,6 +109,7 @@ public class VoiceFragments {
     /**
      * Select a voice at random from voices[]
      */     
+    // TODO: use version of getVoice that doesn't require infinite loop
     fun int getVoice(int voices[]) {    
         while (true) { 
             Math.random2(0, voices.size()-1) => int which;

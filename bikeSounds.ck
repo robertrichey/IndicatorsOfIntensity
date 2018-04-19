@@ -1,3 +1,7 @@
+// Plays bicycle samples with increasing frequency until the golden
+// section, then decrease frequency back to zero 
+
+// TODO: convert into class and integrate with other files
 8 => int numVoices;
 int buffVoices[numVoices];
 
@@ -5,6 +9,7 @@ SndBuf2 buff[numVoices];
 Envelope env[numVoices];
 Pan2 pan[numVoices]; 
 
+// Create array and populate with sounds
 string filename[21];
 
 for (0 => int i; i < filename.size(); i++) {
@@ -16,23 +21,20 @@ for (0 => int i; i < buff.size(); i++) {
     buff[i] => env[i] => pan[i] => dac; // => pan[i]
 }
 
-
+// Calculate increments to chance to play sounds based on duration
+// TODO: get totalDuration from outside file, assign meaningful variable names, operate on a duration measured in milliseconds
 960 / 3 => int x;
 
 1.0 => float threshold;
 0.0 => float minChance;
 threshold - minChance => float difference;
 
-<<< x / 1.618 >>>;
 Std.ftoi(x / 1.618) => int peakDensity;
 
 difference / peakDensity => float thresholdDecrement;
 difference / (x - peakDensity) => float thresholdIncrement;
 
-<<< difference / peakDensity >>>;
-<<< difference / (x - peakDensity) >>>;
-
-
+// Iterate based on totalDuration and frequency of play attempts (every 3 seconds) 
 for (0 => int i; i < x; i++) {
     if (Math.randomf() > threshold) {
         // play something
@@ -48,6 +50,9 @@ for (0 => int i; i < x; i++) {
 }
 5::second => now;
 
+/**
+ * Plays a random sample with variable gain and panning
+ */
 fun void play() {
     getVoice(buffVoices) => int which;
         
@@ -62,9 +67,11 @@ fun void play() {
             Math.random2f(0.3, 2.5) => buff[which].gain;
         }
         
+        // Set envelope and panning
         buff[which].length() * 0.15 => env[which].duration;
         Math.random2f(-0.8, 0.8) => pan[which].pan;
         
+        // Play
         env[which].keyOn();
         buff[which].length() - env[which].duration() => now;
         
@@ -75,6 +82,9 @@ fun void play() {
     }
 }
 
+/**
+ * Select next available voice from voices[]
+ */ 
 fun int getVoice(int voices[]) {
     for (int i; i < voices.size(); i++) { 
         if (voices[i] == 0) {            
