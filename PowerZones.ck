@@ -8,8 +8,9 @@ public class PowerZones {
     data.getSamples() @=> Sample samples[];
     samples.size() => int numberOfSamples;
     
+    
     ShiftingVoice voice;
-    VoiceFragments fragments;
+    VoiceFragments1 fragments1;
     VoiceFragments2 fragments2;
     
     // Set length of piece
@@ -30,6 +31,10 @@ public class PowerZones {
     fun void play() {
         totalDuration / numberOfSamples => float sampleRate;
         
+        //totalDuration => voice.totalDuration;
+        //totalDuration => fragments1.totalDuration;
+        //totalDuration => fragments2.totalDuration;
+        
         // Loop through samples at sampleRate, calculating averages and checking current zone against previous zone
         for (0 => int i; i < numberOfSamples; i++) {
             samples[i].power.current +=> currentTotal;
@@ -46,7 +51,7 @@ public class PowerZones {
                         
                         // Select a voice sample for playback, use its length to set fragment duration
                         voice.setVoice() => dur voiceLength;
-                        spork ~ fragments.turnOn(voiceLength); 
+                        spork ~ fragments1.turnOn(voiceLength); 
                         spork ~ fragments2.turnOn(voiceLength);
                         spork ~ voice.play();
                     }

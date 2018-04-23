@@ -65,7 +65,7 @@ if (!pianoOut3.open(port7)) {
     me.exit();
 }
 
-// TODO: may need to change to 8 if interface not in use
+// NOTE: may need to change to 8 if interface not in use
 MidiOut drumOut;
 8 => int port8;
 
@@ -75,15 +75,15 @@ if (!drumOut.open(port8)) {
 }
 
 
-//---------- PATCH ----------//
+//------- SET UP OBJECTS, VARIABLES TO PLAY WITH MIDI -------//
 
+// Patch for sine waves
 5 => int numSineVoices;
 int sineVoices[numSineVoices];
 
 SinOsc sine[numSineVoices];
-Envelope env[numSineVoices]; // for sine waves
+Envelope env[numSineVoices];
 
-// Connect UGens to dac
 makePatch(sine, env);
 
 
@@ -102,10 +102,8 @@ samples.size() => int numberOfSamples;
 // Set length of piece
 960000 => float totalDuration;
 totalDuration / numberOfSamples => float sampleRate;
-<<< sampleRate >>>;
-
-
-// TODO: how to handle global array? better as dur rather than int?
+ 
+// Set durations for MIDI instruments
 [100, 200, 400, 800] @=> int durations[];
 
 
@@ -300,12 +298,6 @@ fun float setWavePan(int note) {
         0.4 => pan;
     }
     return pan;
-}
-
-fun void playWave(ShiftingFMWave1 w) {
-    Event e;
-    //w.turnOn();
-    e => now;
 }
 
 fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {

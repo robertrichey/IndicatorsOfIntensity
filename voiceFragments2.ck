@@ -27,6 +27,7 @@ public class VoiceFragments2 {
     Gain masterGain;
     
     0.0 => masterGain.gain;
+    960000 => int totalDuration;
 
     1 => int isOff;
     
@@ -63,9 +64,9 @@ public class VoiceFragments2 {
      */
     fun void shiftGain() {
         // TODO: pass in from outside class. Needs to be synchronized with rest of piece
-        9600 => int totalDuration;
-        Std.ftoi(totalDuration * 0.618) => int longSection;
-        totalDuration - longSection => int shortSection;
+        totalDuration / 100 => int dividedDur;
+        Std.ftoi(dividedDur * 0.618) => int longSection;
+        dividedDur - longSection => int shortSection;
         
         // max was previously 0.16
         0.12 => float maxGain;

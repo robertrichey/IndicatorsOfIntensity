@@ -5,7 +5,7 @@
  * Samples gradually fade out over the duration of the piece
  */ 
 
-public class VoiceFragments {
+public class VoiceFragments1 {
     
     5 => int numVoices;
     int buffVoices[numVoices];
@@ -18,6 +18,7 @@ public class VoiceFragments {
     Gain masterGain;
     
     0.27 => masterGain.gain;
+    960000 => int totalDuration;
     1 => int isOff;
     string filename[23];
     
@@ -127,8 +128,7 @@ public class VoiceFragments {
      */     
     fun void turnDown() {
         // TODO: pass in from outside class. Needs to be synchronized with rest of piece
-        9600 => int totalDuration;
-        masterGain.gain() / totalDuration => float gainDecrement;
+        masterGain.gain() / (totalDuration / 100) => float gainDecrement;
         
         for (0 => int i; i < totalDuration; i++) {
             masterGain.gain() - gainDecrement => masterGain.gain;

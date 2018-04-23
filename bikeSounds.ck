@@ -18,24 +18,25 @@ for (0 => int i; i < filename.size(); i++) {
 }
 
 for (0 => int i; i < buff.size(); i++) {
-    buff[i] => env[i] => pan[i] => dac; // => pan[i]
+    buff[i] => env[i] => pan[i] => dac;
 }
 
 // Calculate increments to chance to play sounds based on duration
-// TODO: get totalDuration from outside file, assign meaningful variable names, operate on a duration measured in milliseconds
-960 / 3 => int x;
+// TODO: get totalDuration from outside file
+960000 => int totalDuration;
+totalDuration / 100 / 3 => int numChances;
 
 1.0 => float threshold;
 0.0 => float minChance;
 threshold - minChance => float difference;
 
-Std.ftoi(x / 1.618) => int peakDensity;
+Std.ftoi(numChances / 1.618) => int peakDensity;
 
 difference / peakDensity => float thresholdDecrement;
-difference / (x - peakDensity) => float thresholdIncrement;
+difference / (numChances - peakDensity) => float thresholdIncrement;
 
 // Iterate based on totalDuration and frequency of play attempts (every 3 seconds) 
-for (0 => int i; i < x; i++) {
+for (0 => int i; i < numChances; i++) {
     if (Math.randomf() > threshold) {
         // play something
         spork ~ play();
