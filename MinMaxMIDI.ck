@@ -1,3 +1,11 @@
+/**
+ * Primary file for creating sonification
+ * Sets up necessary MIDI ports
+ * Sets up necessary variables and objects for performing
+ * FM waves, voices, and bike sounds (TODO) while generating
+ * MIDI data based on a RideData object
+ */
+
 //----------- MIDI Setup -----------//
 
 
@@ -124,34 +132,8 @@ data.getGrains(2) @=> wave3.grains;
 totalDuration => wave3.totalDuration;
 spork ~ wave3.play();
 
-// TODO: document and put in right place
 1.0 => float waveChance;
-
 spork ~ setWaveChance();
-
-fun void setWaveChance() {
-    0.25 => float target;
-    100.0 => float grain;
-    totalDuration / 4 / grain => float count;
-    (waveChance - target) / count => float increment;
-    
-    (count * grain)::ms => now;
-        
-    for (0 => int i; i < count; i++) {
-        increment -=> waveChance;
-        grain::ms => now;
-    }   
-    for (0 => int i; i < count; i++) {
-        increment +=> waveChance;
-        grain::ms => now;
-    }    
-    (count * grain)::ms => now;
-}
-
-fun float getWaveChance() {
-    <<< waveChance >>>;
-    return waveChance;
-}
 
 
 // Create and launch voices in background
@@ -212,8 +194,9 @@ for (1 => int i; i < numberOfSamples; i++) {
 //--------functions----------//
 
 
-// TODO: Document
-
+/**
+ * Connect SinOsc and Envelope objects to dac
+ */
 fun void makePatch(SinOsc instrument[], Envelope env[]) {
     for (0 => int i; i < instrument.size(); i++) {
         instrument[i] => env[i] => dac;
@@ -221,6 +204,9 @@ fun void makePatch(SinOsc instrument[], Envelope env[]) {
     }
 }
 
+/**
+ * Play between 1 and 3 drum hits, occasionally follow with 1 or more FM waves
+ */
 fun void playDrum(int count) {
     0 => drumIsOff;
     
@@ -254,7 +240,6 @@ fun void playDrum(int count) {
         count * sampleRate => float ringTime; // elapsed time between previous two drum hits 
         
         // Always turn on one FM wave
-        // TODO: fix pan - currently set to random
         spork ~ wave.turnOn(ringTime, wavePan, e);
         
         // Sometimes use additional FM waves
@@ -277,14 +262,15 @@ fun void playDrum(int count) {
             0 => wave3isOn;
         }
     }
-    
-    // TODO: accidental copy/paste? Remove?
-    Math.random2f(durations[1], durations[durations.size()-1]) * 1.5::ms => now;
+
     MIDInote(drumOut, 0, note, velocity);                
     
     1 => drumIsOff;
 }
 
+/**
+ * Returns a float to be used for setting the pan value of an FM wave
+ */
 fun float setWavePan(int note) {
     float pan;
     
@@ -300,6 +286,38 @@ fun float setWavePan(int note) {
     return pan;
 }
 
+/**
+ * Gradually lowers waveChance to 0.25 and returns it to its starting point over totalDuration milliseconds
+ */
+fun void setWaveChance() {
+    0.25 => float target;
+    100.0 => float grain;
+    totalDuration / 4 / grain => float count;
+    (waveChance - target) / count => float increment;
+    
+    (count * grain)::ms => now;
+    
+    for (0 => int i; i < count; i++) {
+        increment -=> waveChance;
+        grain::ms => now;
+    }   
+    for (0 => int i; i < count; i++) {
+        increment +=> waveChance;
+        grain::ms => now;
+    }    
+    (count * grain)::ms => now;
+}
+
+/**
+ * Returns current value of waveChance
+ */
+fun float getWaveChance() {
+    return waveChance;
+}
+
+/**
+ * Play a SinOsc object if available
+ */
 fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     getVoice(voices) => int which;
     
@@ -316,6 +334,9 @@ fun void playSine(SinOsc instrument[], Envelope env[], int voices[]) {
     }
 }
 
+/**
+ * Play a rapid series of notes on one pitch, occasionally end with a chord
+ */
 fun void playGuitar() {
     0 => guitarIsOff;
     
@@ -346,6 +367,9 @@ fun void playGuitar() {
     1 => guitarIsOff;
 }
 
+/**
+ * Plays a three-voice guitar chord of random duration
+ */
 fun void playGuitarChord() {
     // assign each note its own octave
     Math.random2(48, 60) => int note1;
@@ -365,8 +389,10 @@ fun void playGuitarChord() {
     MIDInote(guitarOut3, 0, note3, velocity);
 }
 
-// TODO: handle velocity/gain/volume
-fun void playFlute() {
+/**
+ * Plays between 2 and 8 notes on flute with occasional trills
+ */
+ fun void playFlute() {
     0 => fluteIsOff;  
     
     Math.random2(2, 8) => int numNotes;
@@ -392,6 +418,9 @@ fun void playFlute() {
     1 => fluteIsOff;
 }
 
+/**
+ * Plays a trill in the flute
+ */
 fun void trill(int velocity) {
     Math.random2(72, 96) => int note;
     Math.random2(1, 5) => int interval;
@@ -410,6 +439,9 @@ fun void trill(int velocity) {
     }
 }
 
+/**
+ * Plays a trill that gradually fades
+ */
 fun void trillFade(int velocity) {
     Math.random2(72, 96) => int note;
     Math.random2(1, 5) => int interval;
@@ -429,6 +461,9 @@ fun void trillFade(int velocity) {
     }
 }
 
+/**
+ * Plays between 2 and 8 notes on marimba
+ */
 fun void playMarimba() {
     0 => marimbaIsOff;
     
@@ -453,6 +488,9 @@ fun void playMarimba() {
     1 => marimbaIsOff;  
 }
 
+/**
+ * Plays a three-voice piano chord for four seconds
+ */
 fun void playPiano() {   
     0 => pianoIsOff;
     
@@ -475,7 +513,9 @@ fun void playPiano() {
     1 => pianoIsOff;
 }
 
-// utility function to send MIDI out notes
+/**
+ * Utility function to send MIDI out notes
+ */
 fun void MIDInote(MidiOut mout, int onOff, int note, int velocity) {
     MidiMsg msg;
     
@@ -490,6 +530,9 @@ fun void MIDInote(MidiOut mout, int onOff, int note, int velocity) {
     mout.send(msg);
 }
 
+/**
+ * Select next available voice from voices[]
+ */
 fun int getVoice(int voices[]) {
     for (int i; i < voices.size(); i++) { 
         if (voices[i] == 0) {            
