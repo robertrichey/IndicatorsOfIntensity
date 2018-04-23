@@ -73,7 +73,6 @@ if (!pianoOut3.open(port7)) {
     me.exit();
 }
 
-// NOTE: may need to change to 8 if interface not in use
 MidiOut drumOut;
 8 => int port8;
 
@@ -504,7 +503,7 @@ fun void playPiano() {
     MIDInote(pianoOut2, 1, note2, velocity);
     MIDInote(pianoOut3, 1, note3, velocity);
     
-    4000::ms => now; // TODO: elaborate on duration?
+    4000::ms => now;
     
     MIDInote(pianoOut1, 0, note1, velocity);
     MIDInote(pianoOut2, 0, note2, velocity);
