@@ -2,11 +2,11 @@
 A sonification program that creates a fixed media composition from athlete data
 
 
-####Program notes: 
+#### Program notes: 
 
 Sonification, the process of turning data into sound, has been a consistent technique in the creation of both electronic and computer music since their beginnings. With the proliferation of increasingly smaller, faster computers and larger, more diverse data sets, the possibilities of both practical and artistic methods of sonification have been rapidly expanding. Indicators of Intensity is the result of the composer's master's thesis that explores one such possibility: creating an original piece of music from data recorded by a cyclist throughout the course of a training session. This project was completed by leveraging the availability of wireless sensor systems, on-bike and wearable computers, software for the analysis of athlete data, and software and programming languages for music composition. The result is a computer program, written in the ChucK programming language, that takes a set of training data as input and renders in real time a computer-aided algorithmic composition that can be easily recorded using a modern digital audio workstation. To achieve this result, the program reads through the provided athlete data and generates MIDI data, synthesizes waveforms, and manipulates field recordings based on a set of mappings from athletic to musical parameters. When developing the program and determining the algorithms used in the sonification process, parameters important to the evaluation of athletic performance and parameters important to musical analysis and composition were carefully considered. Possible mappings were then tested and refined until a musically satisfying result was obtained for one particular data set. The resulting composition is the sonification of this data.
 
 
-####Instructions:
+#### Instructions:
 
 To run the program launch initialize.ck, which adds all necessary files for rendering a sonification. MIDI instruments are needed for a complete rendering. The guitar and piano use three MidiOut UGens each - one for each voice (polyphony using a single MidiOut proved problematic). The data and field recordings used for the original composition have been included in the repo.
